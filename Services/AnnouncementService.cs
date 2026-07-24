@@ -202,6 +202,7 @@ public class AnnouncementService : IAnnouncementService
         announcement.CategoryId = request.CategoryId;
         announcement.UpdatedAt = DateTime.UtcNow;
 
+        _unitOfWork.Announcements.Update(announcement);
         await _unitOfWork.Announcements.SaveChangesAsync();
 
         _logger.LogInformation("Updated announcement {AnnouncementId} with title {Title} by user {UserId}", announcement.Id, title, currentUserId);
@@ -224,6 +225,7 @@ public class AnnouncementService : IAnnouncementService
         announcement.Status = ContentStatus.Published;
         announcement.UpdatedAt = DateTime.UtcNow;
 
+        _unitOfWork.Announcements.Update(announcement);
         await _unitOfWork.Announcements.SaveChangesAsync();
 
         _logger.LogInformation("Published announcement {AnnouncementId} by user {UserId}", announcement.Id, currentUserId);
@@ -244,6 +246,7 @@ public class AnnouncementService : IAnnouncementService
         announcement.Status = ContentStatus.Passive;
         announcement.UpdatedAt = DateTime.UtcNow;
 
+        _unitOfWork.Announcements.Update(announcement);
         await _unitOfWork.Announcements.SaveChangesAsync();
 
         _logger.LogInformation("Unpublished announcement {AnnouncementId} by user {UserId}", announcement.Id, currentUserId);
@@ -261,6 +264,7 @@ public class AnnouncementService : IAnnouncementService
         announcement.Status = ContentStatus.Archived;
         announcement.UpdatedAt = DateTime.UtcNow;
 
+        _unitOfWork.Announcements.Update(announcement);
         await _unitOfWork.Announcements.SaveChangesAsync();
 
         _logger.LogInformation("Archived announcement {AnnouncementId} by user {UserId}", announcement.Id, currentUserId);
