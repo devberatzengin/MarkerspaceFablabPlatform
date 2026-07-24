@@ -1,6 +1,6 @@
 using MakerspaceFablabPlatform.Data.Interfaces;
 using MakerspaceFablabPlatform.Dtos.Category;
-using MakerspaceFablabPlatform.Entitys;
+using MakerspaceFablabPlatform.Entities;
 using MakerspaceFablabPlatform.Excepitons;
 using MakerspaceFablabPlatform.Services.Interfaces;
 using FluentValidation;

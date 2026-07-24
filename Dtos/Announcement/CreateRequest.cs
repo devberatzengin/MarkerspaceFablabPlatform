@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace MakerspaceFablabPlatform.Dtos.Announcement;
 
-using MakerspaceFablabPlatform.Entitys.Enums;
+using MakerspaceFablabPlatform.Entities.Enums;
 
 public class CreateRequest
 {

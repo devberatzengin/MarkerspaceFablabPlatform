@@ -1,4 +1,4 @@
-using MakerspaceFablabPlatform.Entitys;
+using MakerspaceFablabPlatform.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

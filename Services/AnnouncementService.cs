@@ -1,8 +1,8 @@
 using MakerspaceFablabPlatform.Data.Interfaces;
 using MakerspaceFablabPlatform.Dtos.Announcement;
 using MakerspaceFablabPlatform.Dtos.Common;
-using MakerspaceFablabPlatform.Entitys;
-using MakerspaceFablabPlatform.Entitys.Enums;
+using MakerspaceFablabPlatform.Entities;
+using MakerspaceFablabPlatform.Entities.Enums;
 using MakerspaceFablabPlatform.Excepitons;
 using MakerspaceFablabPlatform.Services.Interfaces;
 using FluentValidation;

@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using MakerspaceFablabPlatform.Entitys.Enums;
+using MakerspaceFablabPlatform.Entities.Enums;
 
-namespace MakerspaceFablabPlatform.Entitys;
+namespace MakerspaceFablabPlatform.Entities;
 
 [Table("Users")]
 public class User

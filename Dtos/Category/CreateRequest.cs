@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 namespace MakerspaceFablabPlatform.Dtos.Category;
 
 
-using MakerspaceFablabPlatform.Entitys.Enums;
+using MakerspaceFablabPlatform.Entities.Enums;
 
 public class CreateRequest
 {

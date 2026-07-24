@@ -1,6 +1,6 @@
-using MakerspaceFablabPlatform.Entitys;
+using MakerspaceFablabPlatform.Entities;
 using MakerspaceFablabPlatform.Data.Interfaces;
-using MakerspaceFablabPlatform.Entitys.Enums;
+using MakerspaceFablabPlatform.Entities.Enums;
 
 namespace MakerspaceFablabPlatform.States.AnnouncementStates;
 

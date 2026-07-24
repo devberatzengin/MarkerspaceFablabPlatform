@@ -22,7 +22,7 @@ namespace MakerspaceFablabPlatform.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("MakerspaceFablabPlatform.Entitys.Announcement", b =>
+            modelBuilder.Entity("MakerspaceFablabPlatform.Entities.Announcement", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
@@ -66,7 +66,7 @@ namespace MakerspaceFablabPlatform.Migrations
                     b.ToTable("Announcement");
                 });
 
-            modelBuilder.Entity("MakerspaceFablabPlatform.Entitys.Category", b =>
+            modelBuilder.Entity("MakerspaceFablabPlatform.Entities.Category", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
@@ -101,7 +101,7 @@ namespace MakerspaceFablabPlatform.Migrations
                     b.ToTable("Categories");
                 });
 
-            modelBuilder.Entity("MakerspaceFablabPlatform.Entitys.Event", b =>
+            modelBuilder.Entity("MakerspaceFablabPlatform.Entities.Event", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
@@ -155,7 +155,7 @@ namespace MakerspaceFablabPlatform.Migrations
                     b.ToTable("Event");
                 });
 
-            modelBuilder.Entity("MakerspaceFablabPlatform.Entitys.User", b =>
+            modelBuilder.Entity("MakerspaceFablabPlatform.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
@@ -212,15 +212,15 @@ namespace MakerspaceFablabPlatform.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("MakerspaceFablabPlatform.Entitys.Announcement", b =>
+            modelBuilder.Entity("MakerspaceFablabPlatform.Entities.Announcement", b =>
                 {
-                    b.HasOne("MakerspaceFablabPlatform.Entitys.Category", "Category")
+                    b.HasOne("MakerspaceFablabPlatform.Entities.Category", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("MakerspaceFablabPlatform.Entitys.User", "CreatedBy")
+                    b.HasOne("MakerspaceFablabPlatform.Entities.User", "CreatedBy")
                         .WithMany("Announcements")
                         .HasForeignKey("CreatedByUserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -231,15 +231,15 @@ namespace MakerspaceFablabPlatform.Migrations
                     b.Navigation("CreatedBy");
                 });
 
-            modelBuilder.Entity("MakerspaceFablabPlatform.Entitys.Event", b =>
+            modelBuilder.Entity("MakerspaceFablabPlatform.Entities.Event", b =>
                 {
-                    b.HasOne("MakerspaceFablabPlatform.Entitys.Category", "Category")
+                    b.HasOne("MakerspaceFablabPlatform.Entities.Category", "Category")
                         .WithMany("Events")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("MakerspaceFablabPlatform.Entitys.User", "CreatedBy")
+                    b.HasOne("MakerspaceFablabPlatform.Entities.User", "CreatedBy")
                         .WithMany()
                         .HasForeignKey("CreatedByUserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -250,12 +250,12 @@ namespace MakerspaceFablabPlatform.Migrations
                     b.Navigation("CreatedBy");
                 });
 
-            modelBuilder.Entity("MakerspaceFablabPlatform.Entitys.Category", b =>
+            modelBuilder.Entity("MakerspaceFablabPlatform.Entities.Category", b =>
                 {
                     b.Navigation("Events");
                 });
 
-            modelBuilder.Entity("MakerspaceFablabPlatform.Entitys.User", b =>
+            modelBuilder.Entity("MakerspaceFablabPlatform.Entities.User", b =>
                 {
                     b.Navigation("Announcements");
                 });

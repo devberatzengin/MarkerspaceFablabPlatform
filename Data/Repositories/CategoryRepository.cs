@@ -1,5 +1,5 @@
 using MakerspaceFablabPlatform.Data.Interfaces;
-using MakerspaceFablabPlatform.Entitys;
+using MakerspaceFablabPlatform.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace MakerspaceFablabPlatform.Data.Repositories;

@@ -1,4 +1,4 @@
-using MakerspaceFablabPlatform.Entitys;
+using MakerspaceFablabPlatform.Entities;
 
 namespace MakerspaceFablabPlatform.Data.Interfaces;
 

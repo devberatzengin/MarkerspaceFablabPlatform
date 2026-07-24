@@ -1,5 +1,5 @@
-using MakerspaceFablabPlatform.Entitys;
-using MakerspaceFablabPlatform.Entitys.Enums;
+using MakerspaceFablabPlatform.Entities;
+using MakerspaceFablabPlatform.Entities.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

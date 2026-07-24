@@ -1,10 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
-using MakerspaceFablabPlatform.Entitys.Enums;
+using MakerspaceFablabPlatform.Entities.Enums;
 using Microsoft.EntityFrameworkCore;
 
-namespace MakerspaceFablabPlatform.Entitys;
+namespace MakerspaceFablabPlatform.Entities;
 
 [Table("Categories")]
 [Index(nameof(Name), IsUnique = true)]

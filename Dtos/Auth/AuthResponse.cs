@@ -1,4 +1,4 @@
-using MakerspaceFablabPlatform.Entitys.Enums;
+using MakerspaceFablabPlatform.Entities.Enums;
 
 namespace MakerspaceFablabPlatform.Dtos.Auth;
 

@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using MakerspaceFablabPlatform.Entitys;
+using MakerspaceFablabPlatform.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MakerspaceFablabPlatform.Dtos.Category;

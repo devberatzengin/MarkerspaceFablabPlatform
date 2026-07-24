@@ -6,7 +6,7 @@ using MakerspaceFablabPlatform.Services;
 using MakerspaceFablabPlatform.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
-using MakerspaceFablabPlatform.Entitys;
+using MakerspaceFablabPlatform.Entities;
 using MakerspaceFablabPlatform.Handlers;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
