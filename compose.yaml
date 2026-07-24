@@ -1,0 +1,7 @@
+﻿services:
+  makerspacefablabplatform:
+    image: makerspacefablabplatform
+    build:
+      context: .
+      dockerfile: Dockerfile
+
