@@ -55,7 +55,12 @@ public class Program
         // For repository pattern 
         builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
-        
+        // Unit Of Work Pattern
+        builder.Services.AddDbContext<AppDbContext>(options =>
+            options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+        builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+
         
         // Repositories
         builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));

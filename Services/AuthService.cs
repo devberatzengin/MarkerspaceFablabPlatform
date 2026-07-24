@@ -13,6 +13,7 @@ namespace MakerspaceFablabPlatform.Services;
 
 public class AuthService : IAuthService
 {
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher<User> _passwordHasher;
     private readonly TokenService _tokenService;
@@ -20,8 +21,9 @@ public class AuthService : IAuthService
     private readonly IValidator<LoginRequest> _loginValidator;
     private readonly ILogger<AuthService> _logger;
 
-    public AuthService(IUserRepository userRepository, ILogger<AuthService> logger, TokenService tokenService, IPasswordHasher<User> passwordHasher, IValidator<RegisterRequest> registerValidator, IValidator<LoginRequest> loginValidator)
+    public AuthService(IUnitOfWork unitOfWork,IUserRepository userRepository, ILogger<AuthService> logger, TokenService tokenService, IPasswordHasher<User> passwordHasher, IValidator<RegisterRequest> registerValidator, IValidator<LoginRequest> loginValidator)
     {
+        _unitOfWork = unitOfWork;
         _tokenService = tokenService;
         _passwordHasher = passwordHasher;
         _userRepository = userRepository;
@@ -37,7 +39,7 @@ public class AuthService : IAuthService
         if (!validation.IsValid)
             throw new ValidationException(validation.ToDictionary());
         
-        bool emailExists = await _userRepository.EmailExistsAsync(request.Email);
+        bool emailExists = await _unitOfWork.Users.EmailExistsAsync(request.Email);
         
         if (emailExists)
             throw new ConflictException("Email already exists");
@@ -56,8 +58,8 @@ public class AuthService : IAuthService
         };
         
         user.PasswordHash = _passwordHasher.HashPassword(user, request.Password);
-        await _userRepository.AddAsync(user);
-        await _userRepository.SaveChangesAsync();
+        await _unitOfWork.Users.AddAsync(user);
+        await _unitOfWork.Users.SaveChangesAsync();
 
         _logger.LogInformation("Registered user {UserId}", user.Id);
 
@@ -78,7 +80,7 @@ public class AuthService : IAuthService
         if (!validation.IsValid)
             throw new ValidationException(validation.ToDictionary());
         
-        var dbUser = await _userRepository.GetByEmailAsync(request.Email);
+        var dbUser = await _unitOfWork.Users.GetByEmailAsync(request.Email);
 
         if (dbUser is null)
         {

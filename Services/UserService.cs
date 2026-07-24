@@ -12,13 +12,15 @@ namespace MakerspaceFablabPlatform.Services;
 
 public class UserService : IUserService
 {
-    private readonly IUserRepository _userRepository;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IUserRepository _userRepository; // Kullanmıyorum ama ne olur ne olmaz silmek istemiyorum
     private readonly ILogger<UserService> _logger;
     private readonly IValidator<UpdateRequest> _validator;
     private readonly IPasswordHasher<User> _passwordHasher;
 
-    public UserService(IUserRepository userRepository, ILogger<UserService> logger, IValidator<UpdateRequest> validator, IPasswordHasher<User> passwordHasher)
+    public UserService(IUnitOfWork unitOfWork,IUserRepository userRepository, ILogger<UserService> logger, IValidator<UpdateRequest> validator, IPasswordHasher<User> passwordHasher)
     {
+        _unitOfWork = unitOfWork;
         _userRepository = userRepository;
         _logger = logger;
         _validator = validator;
@@ -27,7 +29,7 @@ public class UserService : IUserService
     
     public async Task<List<UserResponse>> GetAllAsync()
     {
-        return await _userRepository.Query()
+        return await _unitOfWork.Users.Query()
             .Select(u => new UserResponse
             {
                 Id = u.Id,
@@ -46,7 +48,7 @@ public class UserService : IUserService
 
     public async Task<UserResponse> GetByIdAsync(Guid id) // Admin Method
     {
-        var result =  await _userRepository.GetByIdAsync(id);
+        var result =  await _unitOfWork.Users.GetByIdAsync(id);
         if (result is null)
             throw new NotFoundException(nameof(User), id);
 
@@ -77,7 +79,7 @@ public class UserService : IUserService
         if (!validation.IsValid)
             throw new ValidationException(validation.ToDictionary());
         
-        var dbUser = await _userRepository.GetByIdAsync(id);
+        var dbUser = await _unitOfWork.Users.GetByIdAsync(id);
         if (dbUser is null)
             throw new NotFoundException(nameof(User), id);
         
@@ -86,8 +88,9 @@ public class UserService : IUserService
         dbUser.PhoneNumber = request.PhoneNumber;
         dbUser.Email = request.Email;
 
-        _userRepository.Update(dbUser);
-        await _userRepository.SaveChangesAsync();
+        _unitOfWork.Users.Update(dbUser);
+        
+        await _unitOfWork.Users.SaveChangesAsync();
 
         _logger.LogInformation("Updated user {UserId}", dbUser.Id);
 
@@ -110,44 +113,44 @@ public class UserService : IUserService
 
     public async Task DeactivateAsync(Guid id) // Admin Endpoind yine
     {
-         var dbUser = await _userRepository.GetByIdAsync(id);
+         var dbUser = await _unitOfWork.Users.GetByIdAsync(id);
          if (dbUser is null)
              throw new NotFoundException(nameof(User), id);
          
          dbUser.IsActive = false;
-         await _userRepository.SaveChangesAsync();
+         await _unitOfWork.Users.SaveChangesAsync();
 
          _logger.LogInformation("Deactivated user {UserId}", dbUser.Id);
     }
 
     public async Task ActivateAsync(Guid id) 
     {
-         var dbUser = await _userRepository.GetByIdAsync(id);
+         var dbUser = await _unitOfWork.Users.GetByIdAsync(id);
          if (dbUser is null)
              throw new NotFoundException(nameof(User), id);
 
          dbUser.IsActive = true;
-         await _userRepository.SaveChangesAsync();
+         await _unitOfWork.Users.SaveChangesAsync();
 
          _logger.LogInformation("Activated user {UserId}", dbUser.Id);
     }
 
     public async Task DeleteAsync(Guid id)
     {
-        var dbUser = await _userRepository.GetByIdAsync(id);
+        var dbUser = await _unitOfWork.Users.GetByIdAsync(id);
         
         if (dbUser is null)
             throw new NotFoundException(nameof(User), id);
         
         dbUser.IsDeleted = true;
-        await _userRepository.SaveChangesAsync();
+        await _unitOfWork.Users.SaveChangesAsync();
 
         _logger.LogInformation("Deleted user {UserId}", dbUser.Id);
     }
 
     public async Task ChangePasswordAsync(Guid id, ChangePasswordRequest request)
     {
-        var dbUser= await _userRepository.GetByIdAsync(id);
+        var dbUser= await _unitOfWork.Users.GetByIdAsync(id);
         
         if (dbUser is null)
             throw new NotFoundException(nameof(User), id);
@@ -162,7 +165,7 @@ public class UserService : IUserService
         dbUser.PasswordHash = _passwordHasher.HashPassword(dbUser, request.NewPassword);
         dbUser.UpdatedAt = DateTime.UtcNow;
         
-        await _userRepository.SaveChangesAsync();
+        await _unitOfWork.Users.SaveChangesAsync();
         
         _logger.LogInformation("Password changed {UserId}", dbUser.Id);
         
