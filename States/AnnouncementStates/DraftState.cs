@@ -1,0 +1,31 @@
+using MakerspaceFablabPlatform.Data.Interfaces;
+using MakerspaceFablabPlatform.Entitys;
+using MakerspaceFablabPlatform.Entitys.Enums;
+using MakerspaceFablabPlatform.Excepitons;
+
+namespace MakerspaceFablabPlatform.States.AnnouncementStates;
+
+public class DraftState : IAnnouncementState
+{
+    public async Task PublishAsync(Announcement announcement, IUnitOfWork unitOfWork)
+    {
+        announcement.Status = ContentStatus.Published;
+        announcement.UpdatedAt = DateTime.UtcNow;
+        unitOfWork.Announcements.Update(announcement);
+        await unitOfWork.Announcements.SaveChangesAsync();
+    }
+
+    public Task UnpublishAsync(Announcement announcement, IUnitOfWork unitOfWork)
+    {
+        throw new ConflictException("Draft halindeki bir duyuru kaldırılamaz.");
+    }
+
+    public async Task ArchiveAsync(Announcement announcement, IUnitOfWork unitOfWork)
+    {
+        announcement.Status = ContentStatus.Archived;
+        announcement.UpdatedAt = DateTime.UtcNow;
+        
+        unitOfWork.Announcements.Update(announcement);
+        await unitOfWork.Announcements.SaveChangesAsync();
+    }
+}

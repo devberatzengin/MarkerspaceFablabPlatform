@@ -7,6 +7,7 @@ using MakerspaceFablabPlatform.Excepitons;
 using MakerspaceFablabPlatform.Services.Interfaces;
 using FluentValidation;
 using MakerspaceFablabPlatform.Data;
+using MakerspaceFablabPlatform.States.AnnouncementStates;
 using Microsoft.EntityFrameworkCore;
 using ValidationException = MakerspaceFablabPlatform.Excepitons.ValidationException;
 
@@ -217,17 +218,9 @@ public class AnnouncementService : IAnnouncementService
         if (announcement is null)
             throw new NotFoundException(nameof(Announcement), announcementId);
 
-        if (announcement.Status == ContentStatus.Published)
-            throw new ConflictException("Duyuru zaten yayında.");
-        if (announcement.Status == ContentStatus.Archived)
-            throw new ConflictException("Arşivlenmiş duyuru yayına alınamaz.");
-
-        announcement.Status = ContentStatus.Published;
-        announcement.UpdatedAt = DateTime.UtcNow;
-
-        _unitOfWork.Announcements.Update(announcement);
-        await _unitOfWork.Announcements.SaveChangesAsync();
-
+        var state = GetStateFor(announcement.Status);
+        await state.PublishAsync(announcement, _unitOfWork);
+        
         _logger.LogInformation("Published announcement {AnnouncementId} by user {UserId}", announcement.Id, currentUserId);
 
         return ToResponse(announcement);
@@ -240,14 +233,8 @@ public class AnnouncementService : IAnnouncementService
         if (announcement is null)
             throw new NotFoundException(nameof(Announcement), announcementId);
 
-        if (announcement.Status != ContentStatus.Published)
-            throw new ConflictException("Yayında olmayan duyuru yayından kaldırılamaz.");
-
-        announcement.Status = ContentStatus.Passive;
-        announcement.UpdatedAt = DateTime.UtcNow;
-
-        _unitOfWork.Announcements.Update(announcement);
-        await _unitOfWork.Announcements.SaveChangesAsync();
+        var state = GetStateFor(announcement.Status);
+        await state.UnpublishAsync(announcement, _unitOfWork);
 
         _logger.LogInformation("Unpublished announcement {AnnouncementId} by user {UserId}", announcement.Id, currentUserId);
 
@@ -261,11 +248,8 @@ public class AnnouncementService : IAnnouncementService
         if (announcement is null)
             throw new NotFoundException(nameof(Announcement), announcementId);
 
-        announcement.Status = ContentStatus.Archived;
-        announcement.UpdatedAt = DateTime.UtcNow;
-
-        _unitOfWork.Announcements.Update(announcement);
-        await _unitOfWork.Announcements.SaveChangesAsync();
+        var state = GetStateFor(announcement.Status);
+        await state.ArchiveAsync(announcement, _unitOfWork);
 
         _logger.LogInformation("Archived announcement {AnnouncementId} by user {UserId}", announcement.Id, currentUserId);
 
@@ -285,4 +269,16 @@ public class AnnouncementService : IAnnouncementService
         CreatedAt = a.CreatedAt,
         UpdatedAt = a.UpdatedAt
     };
+
+    private IAnnouncementState GetStateFor(ContentStatus status)
+    {
+        return status switch
+        {
+            ContentStatus.Draft => new DraftState(),
+            ContentStatus.Published => new PublishedState(),
+            ContentStatus.Unpublished => new UnpublishedState(),
+            ContentStatus.Archived => new ArchivedState(),
+            _ => throw new InvalidOperationException($"Unknown content status {status}")
+        };
+    }
 }
