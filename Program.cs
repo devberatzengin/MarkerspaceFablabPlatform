@@ -1,27 +1,29 @@
 using System.Text;
-using MarkerspaceFablabPlatform.Data;
-using MarkerspaceFablabPlatform.Services;
-using MarkerspaceFablabPlatform.Services.Interfaces;
+using MakerspaceFablabPlatform.Data;
+using MakerspaceFablabPlatform.Data.Interfaces;
+using MakerspaceFablabPlatform.Data.Repositories;
+using MakerspaceFablabPlatform.Services;
+using MakerspaceFablabPlatform.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
-using MarkerspaceFablabPlatform.Entitys;
-using MarkerspaceFablabPlatform.Handlers;
+using MakerspaceFablabPlatform.Entitys;
+using MakerspaceFablabPlatform.Handlers;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using Microsoft.AspNetCore.Identity;
-using MarkerspaceFablabPlatform.Helpers;
+using MakerspaceFablabPlatform.Helpers;
 using Microsoft.AspNetCore.OpenApi;
 using Scalar.AspNetCore;
 using System.IdentityModel.Tokens.Jwt;
 
 
-namespace MarkerspaceFablabPlatform;
+namespace MakerspaceFablabPlatform;
 
 public class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
 
@@ -45,11 +47,27 @@ public class Program
         // Db Connections
         builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-    
+
+        // Appdbcontext'i somut kullanMAmak için
+        builder.Services.AddScoped<IApplicationDbContext>(sp => 
+            sp.GetRequiredService<AppDbContext>());
+        
+        // For repository pattern 
+        builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+
+        
+        
+        // Repositories
+        builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+        builder.Services.AddScoped<IAnnouncementRepository, AnnouncementRepository>();
+        builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+        //builder.Services.AddScoped<IEventRepository, EventRepository>();
+        builder.Services.AddScoped<IUserRepository, UserRepository>();
+
         // Services
         builder.Services.AddScoped<ICategoryService, CategoryService>();
         builder.Services.AddScoped<IAnnouncementService, AnnouncementService>();
-        builder.Services.AddScoped<IEventService, EventService>();
+        //builder.Services.AddScoped<IEventService, EventService>();
         builder.Services.AddScoped<TokenService>();
         builder.Services.AddScoped<IAuthService, AuthService>();
         builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
@@ -123,11 +141,11 @@ public class Program
         // base admin oluşturma
         using (var scope = app.Services.CreateScope())
         {
-            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
             var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher<User>>();
-            SeedData.EnsureAdmin(db, hasher, app.Configuration);
+            await SeedData.EnsureAdminAsync(userRepository, hasher, app.Configuration);
         }
 
-        app.Run();
+        await app.RunAsync();
     }
 }
