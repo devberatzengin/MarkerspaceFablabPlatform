@@ -1,6 +1,6 @@
-using MarkerspaceFablabPlatform.Entitys.Enums;
+using MakerspaceFablabPlatform.Entitys.Enums;
 
-namespace MarkerspaceFablabPlatform.Dtos.User;
+namespace MakerspaceFablabPlatform.Dtos.User;
 
 public class UserResponse
 {

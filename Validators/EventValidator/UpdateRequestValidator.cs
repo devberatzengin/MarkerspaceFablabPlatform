@@ -1,6 +1,6 @@
 using FluentValidation;
-using MarkerspaceFablabPlatform.Dtos.Event;
-namespace MarkerspaceFablabPlatform.Validators.EventValidator;
+using MakerspaceFablabPlatform.Dtos.Event;
+namespace MakerspaceFablabPlatform.Validators.EventValidator;
 
 public class UpdateRequestValidator : AbstractValidator<UpdateRequest>
 {

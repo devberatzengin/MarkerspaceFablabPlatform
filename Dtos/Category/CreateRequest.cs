@@ -1,9 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace MarkerspaceFablabPlatform.Dtos.Category;
+namespace MakerspaceFablabPlatform.Dtos.Category;
 
 
-using MarkerspaceFablabPlatform.Entitys.Enums;
+using MakerspaceFablabPlatform.Entitys.Enums;
 
 public class CreateRequest
 {

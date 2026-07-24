@@ -1,8 +1,8 @@
-using MarkerspaceFablabPlatform.Excepitons;
+using MakerspaceFablabPlatform.Excepitons;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
-namespace MarkerspaceFablabPlatform.Handlers;
+namespace MakerspaceFablabPlatform.Handlers;
 
 public class GlobalExceptionHandler : IExceptionHandler
 {

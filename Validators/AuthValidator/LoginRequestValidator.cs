@@ -1,7 +1,7 @@
-using MarkerspaceFablabPlatform.Dtos.Auth;
+using MakerspaceFablabPlatform.Dtos.Auth;
 using FluentValidation;
 
-namespace MarkerspaceFablabPlatform.Validators.AuthValidator;
+namespace MakerspaceFablabPlatform.Validators.AuthValidator;
 
 public class LoginRequestValidator : AbstractValidator<LoginRequest>
 {

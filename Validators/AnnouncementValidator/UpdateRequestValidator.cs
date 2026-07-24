@@ -1,7 +1,7 @@
-using MarkerspaceFablabPlatform.Dtos.Announcement;
+using MakerspaceFablabPlatform.Dtos.Announcement;
 using FluentValidation;
 
-namespace MarkerspaceFablabPlatform.Validators.AnnouncementValidator;
+namespace MakerspaceFablabPlatform.Validators.AnnouncementValidator;
 
 public class UpdateRequestValidator : AbstractValidator<UpdateRequest>
 {

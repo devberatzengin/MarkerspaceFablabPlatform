@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace MarkerspaceFablabPlatform.Dtos.User;
+namespace MakerspaceFablabPlatform.Dtos.User;
 
 public class UpdateRequest
 {

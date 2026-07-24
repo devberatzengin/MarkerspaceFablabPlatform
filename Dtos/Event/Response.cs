@@ -1,6 +1,6 @@
-using MarkerspaceFablabPlatform.Entitys.Enums;
+using MakerspaceFablabPlatform.Entitys.Enums;
 
-namespace MarkerspaceFablabPlatform.Dtos.Event;
+namespace MakerspaceFablabPlatform.Dtos.Event;
 
 public class Response
 {

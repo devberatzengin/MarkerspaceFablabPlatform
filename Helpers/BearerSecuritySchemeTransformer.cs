@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.OpenApi;
 
-namespace MarkerspaceFablabPlatform.Helpers;
+namespace MakerspaceFablabPlatform.Helpers;
 
 // OpenAPI dokümanına JWT Bearer şemasını ekler; Scalar'da "Authorize" ile token girilebilir.
 public sealed class BearerSecuritySchemeTransformer : IOpenApiDocumentTransformer

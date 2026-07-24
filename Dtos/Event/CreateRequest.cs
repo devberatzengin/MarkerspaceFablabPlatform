@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace MarkerspaceFablabPlatform.Dtos.Event;
+namespace MakerspaceFablabPlatform.Dtos.Event;
 
 public class CreateRequest
 {

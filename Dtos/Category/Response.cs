@@ -1,7 +1,7 @@
-using MarkerspaceFablabPlatform.Entitys;
-using MarkerspaceFablabPlatform.Entitys.Enums;
+using MakerspaceFablabPlatform.Entitys;
+using MakerspaceFablabPlatform.Entitys.Enums;
 
-namespace MarkerspaceFablabPlatform.Dtos.Category;
+namespace MakerspaceFablabPlatform.Dtos.Category;
 
 public class Response
 {

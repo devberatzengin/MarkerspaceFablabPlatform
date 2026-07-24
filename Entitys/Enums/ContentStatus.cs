@@ -1,4 +1,4 @@
-namespace MarkerspaceFablabPlatform.Entitys.Enums;
+namespace MakerspaceFablabPlatform.Entitys.Enums;
 
 public enum ContentStatus
 {

@@ -1,6 +1,6 @@
-namespace MarkerspaceFablabPlatform.Dtos.Category;
+namespace MakerspaceFablabPlatform.Dtos.Category;
 
-using MarkerspaceFablabPlatform.Entitys.Enums;
+using MakerspaceFablabPlatform.Entitys.Enums;
 using System.ComponentModel.DataAnnotations;
 
 public class UpdateRequest

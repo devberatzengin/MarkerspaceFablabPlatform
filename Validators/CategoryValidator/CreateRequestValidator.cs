@@ -1,7 +1,7 @@
-using MarkerspaceFablabPlatform.Dtos.Category;
+using MakerspaceFablabPlatform.Dtos.Category;
 using FluentValidation;
 
-namespace MarkerspaceFablabPlatform.Validators.CategoryValidator;
+namespace MakerspaceFablabPlatform.Validators.CategoryValidator;
 
 public class CreateRequestValidator : AbstractValidator<CreateRequest>
 {

@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace MarkerspaceFablabPlatform.Dtos.Auth;
+namespace MakerspaceFablabPlatform.Dtos.Auth;
 
 public class LoginRequest
 {

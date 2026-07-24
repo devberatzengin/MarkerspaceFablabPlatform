@@ -1,6 +1,6 @@
-using MarkerspaceFablabPlatform.Entitys.Enums;
+using MakerspaceFablabPlatform.Entitys.Enums;
 
-namespace MarkerspaceFablabPlatform.Dtos.Auth;
+namespace MakerspaceFablabPlatform.Dtos.Auth;
 
 public class AuthResponse
 {

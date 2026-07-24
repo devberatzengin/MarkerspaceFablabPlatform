@@ -1,11 +1,11 @@
 using System.Security.Claims;
-using MarkerspaceFablabPlatform.Dtos.User;
-using MarkerspaceFablabPlatform.Excepitons;
-using MarkerspaceFablabPlatform.Services.Interfaces;
+using MakerspaceFablabPlatform.Dtos.User;
+using MakerspaceFablabPlatform.Excepitons;
+using MakerspaceFablabPlatform.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace MarkerspaceFablabPlatform.Controllers;
+namespace MakerspaceFablabPlatform.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

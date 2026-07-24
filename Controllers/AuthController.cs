@@ -1,8 +1,8 @@
-using MarkerspaceFablabPlatform.Services.Interfaces;
-using MarkerspaceFablabPlatform.Dtos.Auth;
+using MakerspaceFablabPlatform.Services.Interfaces;
+using MakerspaceFablabPlatform.Dtos.Auth;
 using Microsoft.AspNetCore.Mvc;
 
-namespace MarkerspaceFablabPlatform.Controllers;
+namespace MakerspaceFablabPlatform.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

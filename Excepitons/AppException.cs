@@ -1,4 +1,4 @@
-namespace MarkerspaceFablabPlatform.Excepitons;
+namespace MakerspaceFablabPlatform.Excepitons;
 
 public class AppException : Exception
 {

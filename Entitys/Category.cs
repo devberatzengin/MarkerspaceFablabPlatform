@@ -1,10 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
-using MarkerspaceFablabPlatform.Entitys.Enums;
+using MakerspaceFablabPlatform.Entitys.Enums;
 using Microsoft.EntityFrameworkCore;
 
-namespace MarkerspaceFablabPlatform.Entitys;
+namespace MakerspaceFablabPlatform.Entitys;
 
 [Table("Categories")]
 [Index(nameof(Name), IsUnique = true)]
@@ -25,8 +25,4 @@ public class Category
     public bool IsDeleted { get; set; } = false;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
-    
-    [JsonIgnore]
-    public ICollection<Event> Events { get; set; } = new List<Event>();
-    
 }

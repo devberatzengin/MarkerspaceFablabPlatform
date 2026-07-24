@@ -1,4 +1,4 @@
-namespace MarkerspaceFablabPlatform.Dtos.Common;
+namespace MakerspaceFablabPlatform.Dtos.Common;
 
 public class PagedResponse<T>
 {

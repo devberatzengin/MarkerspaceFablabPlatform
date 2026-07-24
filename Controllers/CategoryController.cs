@@ -1,13 +1,13 @@
 using System.Threading.Tasks;
-using MarkerspaceFablabPlatform.Entitys;
+using MakerspaceFablabPlatform.Entitys;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using MarkerspaceFablabPlatform.Dtos.Category;
-using MarkerspaceFablabPlatform.Services.Interfaces;
+using MakerspaceFablabPlatform.Dtos.Category;
+using MakerspaceFablabPlatform.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 
-namespace MarkerspaceFablabPlatform.Controllers;
+namespace MakerspaceFablabPlatform.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

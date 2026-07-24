@@ -1,4 +1,4 @@
-namespace MarkerspaceFablabPlatform.Dtos.User;
+namespace MakerspaceFablabPlatform.Dtos.User;
 
 public class ChangePasswordRequest
 {
