@@ -35,7 +35,7 @@ public class User
     
     
     public ICollection<Announcement> Announcements { get; set; } = new List<Announcement>();
-
+    public ICollection<Equipment> Equipments { get; set; } = new List<Equipment>();
     
     public bool IsActive { get; set; } = true;
     public bool IsDeleted { get; set; } = false;

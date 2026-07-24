@@ -27,5 +27,10 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .WithOne(a => a.CreatedBy)
             .HasForeignKey(a => a.CreatedByUserId)
             .OnDelete(DeleteBehavior.Restrict);
+        
+        builder.HasMany(u => u.Equipments)
+            .WithOne(e => e.UsingBy)
+            .HasForeignKey(a => a.UsingById)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
