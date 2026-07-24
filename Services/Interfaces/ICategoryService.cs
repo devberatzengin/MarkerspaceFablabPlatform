@@ -1,6 +1,6 @@
-using MarkerspaceFablabPlatform.Dtos.Category;
+using MakerspaceFablabPlatform.Dtos.Category;
 
-namespace MarkerspaceFablabPlatform.Services.Interfaces;
+namespace MakerspaceFablabPlatform.Services.Interfaces;
 
 public interface ICategoryService
 {

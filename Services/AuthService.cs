@@ -1,32 +1,30 @@
-using MarkerspaceFablabPlatform.Data;
-using MarkerspaceFablabPlatform.Dtos.Auth;
-using MarkerspaceFablabPlatform.Entitys;
-using MarkerspaceFablabPlatform.Entitys.Enums;
-using MarkerspaceFablabPlatform.Excepitons;
-using MarkerspaceFablabPlatform.Services.Interfaces;
+using MakerspaceFablabPlatform.Data.Interfaces;
+using MakerspaceFablabPlatform.Dtos.Auth;
+using MakerspaceFablabPlatform.Entitys;
+using MakerspaceFablabPlatform.Entitys.Enums;
+using MakerspaceFablabPlatform.Excepitons;
+using MakerspaceFablabPlatform.Services.Interfaces;
 using FluentValidation;
-using MarkerspaceFablabPlatform.Data.Interfaces;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using ValidationException = MarkerspaceFablabPlatform.Excepitons.ValidationException;
+using ValidationException = MakerspaceFablabPlatform.Excepitons.ValidationException;
 
 
-namespace MarkerspaceFablabPlatform.Services;
+namespace MakerspaceFablabPlatform.Services;
 
 public class AuthService : IAuthService
 {
-    private readonly IApplicationDbContext _dbContext;
+    private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher<User> _passwordHasher;
     private readonly TokenService _tokenService;
     private readonly IValidator<RegisterRequest> _registerValidator;
     private readonly IValidator<LoginRequest> _loginValidator;
     private readonly ILogger<AuthService> _logger;
 
-    public AuthService(IApplicationDbContext dbContext, ILogger<AuthService> logger, TokenService tokenService, IPasswordHasher<User> passwordHasher, IValidator<RegisterRequest> registerValidator, IValidator<LoginRequest> loginValidator)
+    public AuthService(IUserRepository userRepository, ILogger<AuthService> logger, TokenService tokenService, IPasswordHasher<User> passwordHasher, IValidator<RegisterRequest> registerValidator, IValidator<LoginRequest> loginValidator)
     {
         _tokenService = tokenService;
         _passwordHasher = passwordHasher;
-        _dbContext = dbContext;
+        _userRepository = userRepository;
         _logger = logger;
         _registerValidator = registerValidator;
         _loginValidator = loginValidator;
@@ -39,7 +37,7 @@ public class AuthService : IAuthService
         if (!validation.IsValid)
             throw new ValidationException(validation.ToDictionary());
         
-        bool emailExists = await _dbContext.Users.AnyAsync(u => u.Email == request.Email);
+        bool emailExists = await _userRepository.EmailExistsAsync(request.Email);
         
         if (emailExists)
             throw new ConflictException("Email already exists");
@@ -58,8 +56,8 @@ public class AuthService : IAuthService
         };
         
         user.PasswordHash = _passwordHasher.HashPassword(user, request.Password);
-        _dbContext.Users.Add(user);
-        await _dbContext.SaveChangesAsync();
+        await _userRepository.AddAsync(user);
+        await _userRepository.SaveChangesAsync();
 
         _logger.LogInformation("Registered user {UserId}", user.Id);
 
@@ -78,9 +76,9 @@ public class AuthService : IAuthService
         var validation  = await _loginValidator.ValidateAsync(request);
         
         if (!validation.IsValid)
-            throw new ValidationException(validation.ToDictionary()); 
-                
-        var dbUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+            throw new ValidationException(validation.ToDictionary());
+        
+        var dbUser = await _userRepository.GetByEmailAsync(request.Email);
 
         if (dbUser is null)
         {

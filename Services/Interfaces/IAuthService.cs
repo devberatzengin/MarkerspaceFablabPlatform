@@ -1,6 +1,6 @@
-using MarkerspaceFablabPlatform.Dtos.Auth;
+using MakerspaceFablabPlatform.Dtos.Auth;
 
-namespace MarkerspaceFablabPlatform.Services.Interfaces;
+namespace MakerspaceFablabPlatform.Services.Interfaces;
 
 public interface IAuthService
 {

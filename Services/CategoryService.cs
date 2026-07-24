@@ -1,26 +1,25 @@
-using MarkerspaceFablabPlatform.Data;
-using MarkerspaceFablabPlatform.Dtos.Category;
-using MarkerspaceFablabPlatform.Entitys;
-using MarkerspaceFablabPlatform.Entitys.Enums;
-using MarkerspaceFablabPlatform.Excepitons;
-using MarkerspaceFablabPlatform.Services.Interfaces;
+using MakerspaceFablabPlatform.Data.Interfaces;
+using MakerspaceFablabPlatform.Dtos.Category;
+using MakerspaceFablabPlatform.Entitys;
+using MakerspaceFablabPlatform.Excepitons;
+using MakerspaceFablabPlatform.Services.Interfaces;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
-using ValidationException = MarkerspaceFablabPlatform.Excepitons.ValidationException;
+using ValidationException = MakerspaceFablabPlatform.Excepitons.ValidationException;
 
 
-namespace MarkerspaceFablabPlatform.Services;
+namespace MakerspaceFablabPlatform.Services;
 
 public class CategoryService : ICategoryService
 {
     
-    private readonly AppDbContext _dbContext;
+    private readonly ICategoryRepository _categoryRepository;
     private readonly ILogger<CategoryService> _logger;
     private readonly IValidator<CreateRequest> _createValidator;
     private readonly IValidator<UpdateRequest> _updateValidator;
-    public CategoryService(AppDbContext dbContext, ILogger<CategoryService> logger, IValidator<CreateRequest> createValidator, IValidator<UpdateRequest> updateValidator)
+    public CategoryService(ICategoryRepository categoryRepository, ILogger<CategoryService> logger, IValidator<CreateRequest> createValidator, IValidator<UpdateRequest> updateValidator)
     {
-        _dbContext = dbContext;
+        _categoryRepository = categoryRepository;
         _logger = logger;
         _createValidator = createValidator;
         _updateValidator = updateValidator;
@@ -36,8 +35,7 @@ public class CategoryService : ICategoryService
             throw new ValidationException(validation.ToDictionary());
         
         
-        bool nameExist = await _dbContext.Categories
-            .AnyAsync(c => c.Name == createRequest.Name);
+        bool nameExist = await _categoryRepository.NameExistsAsync(createRequest.Name);
         
         if (nameExist)
             throw new ConflictException($"'{createRequest.Name}' adında kategori zaten var.");
@@ -53,8 +51,8 @@ public class CategoryService : ICategoryService
             UpdatedAt = DateTime.UtcNow
         };
         
-        _dbContext.Categories.Add(newCategory);
-        await _dbContext.SaveChangesAsync();
+        await _categoryRepository.AddAsync(newCategory);
+        await _categoryRepository.SaveChangesAsync();
         
         _logger.LogInformation("Created category {CategoryId} with name {Name}", newCategory.Id, newCategory.Name);
 
@@ -70,7 +68,7 @@ public class CategoryService : ICategoryService
 
     public async Task<List<Response>> GetAllAsync(bool includeUnactivated = false)
     {
-        var categories =  await _dbContext.Categories
+        var categories = await _categoryRepository.Query()
             .Where(c => includeUnactivated || c.IsActive)
             .ToListAsync();
 
@@ -92,14 +90,13 @@ public class CategoryService : ICategoryService
     
     public async Task<Response?> GetByIdAsync(Guid categoryId,bool includeUnactivated = false)
     {
-        var category = await _dbContext.Categories
-            .AsNoTracking()                                        // salt okuma
+        var category = await _categoryRepository.Query()                     // salt okuma (AsNoTracking varsayılan)
             .Where(c => c.Id == categoryId)
             .Where(c => includeUnactivated || c.IsActive)          // pasifler dahil mi?
-            .FirstOrDefaultAsync();  
+            .FirstOrDefaultAsync();
         
         if (category is null)
-            throw new NotFoundException(nameof(Category), categoryId);        
+            throw new NotFoundException(nameof(Category), categoryId);
         
         return new Response()
         {
@@ -118,12 +115,12 @@ public class CategoryService : ICategoryService
         if (!validation.IsValid)
             throw new ValidationException(validation.ToDictionary());
         
-        var category = await _dbContext.Categories.FirstOrDefaultAsync(c => c.Id == updateRequest.Id);
+        var category = await _categoryRepository.GetByIdAsync(updateRequest.Id);
 
         if (category is null)
             throw new NotFoundException(nameof(Category), updateRequest.Id);
         
-        bool nameExist = await _dbContext.Categories.AnyAsync(c => c.Id != updateRequest.Id && c.Name == updateRequest.Name);
+        bool nameExist = await _categoryRepository.NameExistsAsync(updateRequest.Name, updateRequest.Id);
 
         if (nameExist)
             throw new ConflictException($"'{updateRequest.Name}' adında kategori zaten var.");
@@ -133,7 +130,7 @@ public class CategoryService : ICategoryService
         category.IsActive = updateRequest.IsActive;
         category.UpdatedAt = DateTime.UtcNow;
 
-        await _dbContext.SaveChangesAsync();
+        await _categoryRepository.SaveChangesAsync();
 
         _logger.LogInformation("Updated category {CategoryId}", category.Id);
 
@@ -148,7 +145,7 @@ public class CategoryService : ICategoryService
 
     public async Task<Response?> DeactivateAsync(Guid categoryId)
     {
-        var category = await _dbContext.Categories.FirstOrDefaultAsync(c => c.Id == categoryId); 
+        var category = await _categoryRepository.GetByIdAsync(categoryId);
         
         if (category is null)
             throw new NotFoundException(nameof(Category), categoryId);
@@ -156,7 +153,7 @@ public class CategoryService : ICategoryService
         category.IsActive = false;
         category.UpdatedAt = DateTime.UtcNow;
 
-        await _dbContext.SaveChangesAsync();
+        await _categoryRepository.SaveChangesAsync();
 
         _logger.LogInformation("Deactivated category {CategoryId}", category.Id);
 
@@ -172,14 +169,14 @@ public class CategoryService : ICategoryService
 
     public async Task<bool> DeleteAsync(Guid categoryId)
     {
-        var category = await _dbContext.Categories.FirstOrDefaultAsync(c => c.Id == categoryId);
+        var category = await _categoryRepository.GetByIdAsync(categoryId);
         
         if (category is null)
             throw new NotFoundException(nameof(Category), categoryId);
             
         category.IsDeleted = true;
         category.UpdatedAt = DateTime.UtcNow;
-        await _dbContext.SaveChangesAsync();
+        await _categoryRepository.SaveChangesAsync();
 
         _logger.LogInformation("Deleted category {CategoryId}", category.Id);
 

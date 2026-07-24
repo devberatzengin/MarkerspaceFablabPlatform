@@ -1,38 +1,39 @@
-using MarkerspaceFablabPlatform.Data;
-using MarkerspaceFablabPlatform.Dtos.Announcement;
-using MarkerspaceFablabPlatform.Dtos.Common;
-using MarkerspaceFablabPlatform.Entitys;
-using MarkerspaceFablabPlatform.Entitys.Enums;
-using MarkerspaceFablabPlatform.Excepitons;
-using MarkerspaceFablabPlatform.Services.Interfaces;
+using MakerspaceFablabPlatform.Data.Interfaces;
+using MakerspaceFablabPlatform.Dtos.Announcement;
+using MakerspaceFablabPlatform.Dtos.Common;
+using MakerspaceFablabPlatform.Entitys;
+using MakerspaceFablabPlatform.Entitys.Enums;
+using MakerspaceFablabPlatform.Excepitons;
+using MakerspaceFablabPlatform.Services.Interfaces;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
-using ValidationException = MarkerspaceFablabPlatform.Excepitons.ValidationException;
+using ValidationException = MakerspaceFablabPlatform.Excepitons.ValidationException;
 
-namespace MarkerspaceFablabPlatform.Services;
+namespace MakerspaceFablabPlatform.Services;
 
 public class AnnouncementService : IAnnouncementService
 {
-    private readonly AppDbContext _dbContext;
+    private readonly IAnnouncementRepository _announcementRepository;
+    private readonly ICategoryRepository _categoryRepository;
+    private readonly IUserRepository _userRepository;
     private readonly ILogger<AnnouncementService> _logger;
     private readonly IValidator<CreateRequest> _createValidator;
     private readonly IValidator<UpdateRequest> _updateValidator;
     
     
-    public AnnouncementService(AppDbContext dbContext, ILogger<AnnouncementService> logger, IValidator<CreateRequest> createValidator, IValidator<UpdateRequest> updateValidator)
+    public AnnouncementService(IAnnouncementRepository announcementRepository, ICategoryRepository categoryRepository, IUserRepository userRepository, ILogger<AnnouncementService> logger, IValidator<CreateRequest> createValidator, IValidator<UpdateRequest> updateValidator)
     {
+        _announcementRepository = announcementRepository;
+        _categoryRepository = categoryRepository;
+        _userRepository = userRepository;
         _logger = logger;
-        _dbContext = dbContext;
         _createValidator = createValidator;
         _updateValidator = updateValidator;
     }
 
     public async Task<Response?> GetByIdAsync(Guid announcementId, bool isAdmin)
     {
-        var result = await _dbContext.Announcements
-            .Include(a => a.Category)
-            .Include(a => a.CreatedBy)
-            .FirstOrDefaultAsync(a => a.Id == announcementId);
+        var result = await _announcementRepository.GetByIdWithDetailsAsync(announcementId);
 
         if (result is null)
             throw new NotFoundException(nameof(Announcement), announcementId);
@@ -48,7 +49,7 @@ public class AnnouncementService : IAnnouncementService
         var page = Math.Max(1, request.Page);
         var pageSize = Math.Clamp(request.PageSize, 1, 100);
 
-        var query = _dbContext.Announcements.AsNoTracking().AsQueryable();
+        var query = _announcementRepository.Query();
 
         if (!isAdmin)
             query = query.Where(a => a.Status == ContentStatus.Published);
@@ -114,17 +115,16 @@ public class AnnouncementService : IAnnouncementService
         if (!validation.IsValid)
             throw new ValidationException(validation.ToDictionary());
         
-        var category = await _dbContext.Categories.FirstOrDefaultAsync(c => c.Id == request.CategoryId);
+        var category = await _categoryRepository.Query().FirstOrDefaultAsync(c => c.Id == request.CategoryId);
         
         if (category is null)
             throw new NotFoundException(nameof(Category), request.CategoryId);
         
-        var nameCount = await _dbContext.Announcements
-            .CountAsync(a => a.Title == request.Title || a.Title.StartsWith(request.Title + " "));
+        var nameCount = await _announcementRepository.CountByTitleAsync(request.Title);
         
         var title = nameCount > 0 ? $"{request.Title} {nameCount + 1}" : request.Title;
         
-        var creator = await _dbContext.Users
+        var creator = await _userRepository.Query()
             .Where(u => u.Id == currentUserId)
             .Select(u => new { u.FirstName, u.LastName })
             .FirstAsync();
@@ -142,8 +142,8 @@ public class AnnouncementService : IAnnouncementService
             UpdatedAt = DateTime.UtcNow
         };
         
-        _dbContext.Announcements.Add(newAnnouncement);
-        await _dbContext.SaveChangesAsync();
+        await _announcementRepository.AddAsync(newAnnouncement);
+        await _announcementRepository.SaveChangesAsync();
         
         _logger.LogInformation("Created announcement {AnnouncementId} with title {Title} by user {UserId}", newAnnouncement.Id, title, currentUserId);
         
@@ -169,53 +169,45 @@ public class AnnouncementService : IAnnouncementService
     public async Task<Response?> UpdateAsync(UpdateRequest request, Guid currentUserId, bool isAdmin)
     {
         var validation = await _updateValidator.ValidateAsync(request);
-        
+
         if (!validation.IsValid)
             throw new ValidationException(validation.ToDictionary());
 
-        var announcement = await _dbContext.Announcements
-            .Include(a => a.Category)
-            .Include(a => a.CreatedBy)
-            .FirstOrDefaultAsync(a => a.Id == request.Id);
+        var announcement = await _announcementRepository.GetByIdWithDetailsAsync(request.Id, asNoTracking: false);
 
         if (announcement is null)
             throw new NotFoundException(nameof(Announcement), request.Id);
-        
-        
-        
+
+
+
         // Admin değilse yalnızca kendi duyurusunu düzenleyebilir
         if (!isAdmin && announcement.CreatedByUserId != currentUserId)
             throw new ForbiddenException("Bu duyuruyu düzenleme yetkiniz yok.");
-        
-        var categoryExists = await _dbContext.Categories.AnyAsync(c => c.Id == request.CategoryId);
+
+        var categoryExists = await _categoryRepository.ExistsAsync(c => c.Id == request.CategoryId);
         if (!categoryExists)
             throw new NotFoundException(nameof(Category), request.CategoryId);
-        
-        var nameCount = await _dbContext.Announcements
-            .CountAsync(a => a.Id != announcement.Id &&
-                (a.Title == request.Title || a.Title.StartsWith(request.Title + " ")));
-        
+
+        var nameCount = await _announcementRepository.CountByTitleAsync(request.Title, announcement.Id);
+
         var title = nameCount > 0 ? $"{request.Title} {nameCount + 1}" : request.Title;
-        
+
         announcement.Title = title;
         announcement.Content = request.Content;
         announcement.CategoryId = request.CategoryId;
         announcement.UpdatedAt = DateTime.UtcNow;
-        
-        await _dbContext.SaveChangesAsync();
-        
+
+        await _announcementRepository.SaveChangesAsync();
+
         _logger.LogInformation("Updated announcement {AnnouncementId} with title {Title} by user {UserId}", announcement.Id, title, currentUserId);
 
         return ToResponse(announcement);
     }
-    
+
     public async Task<Response?> PublishAsync(Guid announcementId, Guid currentUserId)
     {
-        var announcement = await _dbContext.Announcements
-            .Include(a => a.Category)
-            .Include(a => a.CreatedBy)
-            .FirstOrDefaultAsync(a => a.Id == announcementId);
-        
+        var announcement = await _announcementRepository.GetByIdWithDetailsAsync(announcementId, asNoTracking: false);
+
         if (announcement is null)
             throw new NotFoundException(nameof(Announcement), announcementId);
 
@@ -226,9 +218,9 @@ public class AnnouncementService : IAnnouncementService
 
         announcement.Status = ContentStatus.Published;
         announcement.UpdatedAt = DateTime.UtcNow;
-        
-        await _dbContext.SaveChangesAsync();
-        
+
+        await _announcementRepository.SaveChangesAsync();
+
         _logger.LogInformation("Published announcement {AnnouncementId} by user {UserId}", announcement.Id, currentUserId);
 
         return ToResponse(announcement);
@@ -236,11 +228,8 @@ public class AnnouncementService : IAnnouncementService
 
     public async Task<Response?> UnpublishAsync(Guid announcementId, Guid currentUserId)
     {
-        var announcement = await _dbContext.Announcements
-            .Include(a => a.Category)
-            .Include(a => a.CreatedBy)
-            .FirstOrDefaultAsync(a => a.Id == announcementId);
-        
+        var announcement = await _announcementRepository.GetByIdWithDetailsAsync(announcementId, asNoTracking: false);
+
         if (announcement is null)
             throw new NotFoundException(nameof(Announcement), announcementId);
 
@@ -249,9 +238,9 @@ public class AnnouncementService : IAnnouncementService
 
         announcement.Status = ContentStatus.Passive;
         announcement.UpdatedAt = DateTime.UtcNow;
-        
-        await _dbContext.SaveChangesAsync();
-        
+
+        await _announcementRepository.SaveChangesAsync();
+
         _logger.LogInformation("Unpublished announcement {AnnouncementId} by user {UserId}", announcement.Id, currentUserId);
 
         return ToResponse(announcement);
@@ -259,7 +248,7 @@ public class AnnouncementService : IAnnouncementService
 
     public async Task<bool> ArchiveAsync(Guid announcementId, Guid currentUserId)
     {
-        var announcement = await _dbContext.Announcements.FirstOrDefaultAsync(a => a.Id == announcementId);
+        var announcement = await _announcementRepository.GetByIdAsync(announcementId);
 
         if (announcement is null)
             throw new NotFoundException(nameof(Announcement), announcementId);
@@ -267,7 +256,7 @@ public class AnnouncementService : IAnnouncementService
         announcement.Status = ContentStatus.Archived;
         announcement.UpdatedAt = DateTime.UtcNow;
 
-        await _dbContext.SaveChangesAsync();
+        await _announcementRepository.SaveChangesAsync();
 
         _logger.LogInformation("Archived announcement {AnnouncementId} by user {UserId}", announcement.Id, currentUserId);
 

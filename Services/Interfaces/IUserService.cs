@@ -1,6 +1,6 @@
-using MarkerspaceFablabPlatform.Dtos.User;
+using MakerspaceFablabPlatform.Dtos.User;
 
-namespace MarkerspaceFablabPlatform.Services.Interfaces;
+namespace MakerspaceFablabPlatform.Services.Interfaces;
 
 public interface IUserService
 {

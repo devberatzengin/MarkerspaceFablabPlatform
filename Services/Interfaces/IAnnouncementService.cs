@@ -1,7 +1,7 @@
-using MarkerspaceFablabPlatform.Dtos.Announcement;
-using MarkerspaceFablabPlatform.Dtos.Common;
+using MakerspaceFablabPlatform.Dtos.Announcement;
+using MakerspaceFablabPlatform.Dtos.Common;
 
-namespace MarkerspaceFablabPlatform.Services.Interfaces;
+namespace MakerspaceFablabPlatform.Services.Interfaces;
 
 public interface IAnnouncementService
 {
