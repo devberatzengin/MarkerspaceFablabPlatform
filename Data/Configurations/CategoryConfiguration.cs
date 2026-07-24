@@ -1,8 +1,8 @@
-using MarkerspaceFablabPlatform.Entitys;
+using MakerspaceFablabPlatform.Entitys;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace MarkerspaceFablabPlatform.Data.Configurations;
+namespace MakerspaceFablabPlatform.Data.Configurations;
 
 public class CategoryConfiguration : IEntityTypeConfiguration<Category>
 {

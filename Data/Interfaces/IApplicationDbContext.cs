@@ -1,7 +1,7 @@
-using MarkerspaceFablabPlatform.Entitys;
+using MakerspaceFablabPlatform.Entitys;
 using Microsoft.EntityFrameworkCore;
 
-namespace MarkerspaceFablabPlatform.Data.Interfaces;
+namespace MakerspaceFablabPlatform.Data.Interfaces;
    
 public interface IApplicationDbContext
 {
@@ -9,6 +9,8 @@ public interface IApplicationDbContext
     DbSet<Announcement> Announcements { get; }
     DbSet<Category> Categories { get; }
     DbSet<User> Users { get; }
-
+    
+    DbSet<T> Set<T>() where T : class;  
+    
     Task<int> SaveChangesAsync(CancellationToken ct = default);
 }

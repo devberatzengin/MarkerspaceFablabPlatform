@@ -1,13 +1,19 @@
-using MarkerspaceFablabPlatform.Dtos.Common;
+using System.Linq.Expressions;
+using MakerspaceFablabPlatform.Dtos.Common;
 
-namespace MarkerspaceFablabPlatform.Data.Interfaces;
+namespace MakerspaceFablabPlatform.Data.Interfaces;
 
-public interface IRepository <T> where T : class
+public interface IRepository<T> where T : class
 {
-    Task<T> GetByIdAsync(Guid id);
-    Task<PagedResponse<T>> GetAllAsync();
-    Task<T> CreateAsync(T entity);
-    Task<T> UpdateAsync(T entity);
-    
-    Task<T> DeleteAsync(Guid id);
+    IQueryable<T> Query(bool asNoTracking = true);
+
+    Task<T?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<T>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default);
+
+    Task AddAsync(T entity, CancellationToken cancellationToken = default);
+    void Update(T entity);
+    void Remove(T entity);
+
+    Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

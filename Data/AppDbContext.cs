@@ -1,9 +1,9 @@
-using MarkerspaceFablabPlatform.Data.Interfaces;
-using MarkerspaceFablabPlatform.Entitys;
+using MakerspaceFablabPlatform.Data.Interfaces;
+using MakerspaceFablabPlatform.Entitys;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace MarkerspaceFablabPlatform.Data;
+namespace MakerspaceFablabPlatform.Data;
 
 public class AppDbContext : DbContext,  IApplicationDbContext
 {
@@ -13,7 +13,6 @@ public class AppDbContext : DbContext,  IApplicationDbContext
     }
     
     public DbSet<Announcement> Announcements { get; set; }
-    public DbSet<Event> Events { get; set; }
     public DbSet<Category> Categories { get; set; }
     public DbSet<User> Users { get; set; }
 

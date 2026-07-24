@@ -1,9 +1,9 @@
-using MarkerspaceFablabPlatform.Entitys;
-using MarkerspaceFablabPlatform.Entitys.Enums;
+using MakerspaceFablabPlatform.Entitys;
+using MakerspaceFablabPlatform.Entitys.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace MarkerspaceFablabPlatform.Data.Configurations;
+namespace MakerspaceFablabPlatform.Data.Configurations;
 
 public class AnnouncementConfiguration : IEntityTypeConfiguration<Announcement>
 {

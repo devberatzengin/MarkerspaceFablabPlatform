@@ -1,14 +1,15 @@
-using MarkerspaceFablabPlatform.Entitys;
-using MarkerspaceFablabPlatform.Entitys.Enums;
+using MakerspaceFablabPlatform.Data.Interfaces;
+using MakerspaceFablabPlatform.Entitys;
+using MakerspaceFablabPlatform.Entitys.Enums;
 using Microsoft.AspNetCore.Identity;
 
-namespace MarkerspaceFablabPlatform.Data;
+namespace MakerspaceFablabPlatform.Data;
 
 public static class SeedData
 {
-    public static void EnsureAdmin(AppDbContext db, IPasswordHasher<User> hasher, IConfiguration config)
+    public static async Task EnsureAdminAsync(IUserRepository userRepository, IPasswordHasher<User> hasher, IConfiguration config)
     {
-        if (db.Users.Any(u => u.Type == UserType.Admin))
+        if (await userRepository.AnyAdminExistsAsync())
             return;
 
         var email = config["SeedAdmin:Email"] ?? "admin@example.com";
@@ -28,7 +29,7 @@ public static class SeedData
         };
         admin.PasswordHash = hasher.HashPassword(admin, password);
 
-        db.Users.Add(admin);
-        db.SaveChanges();
+        await userRepository.AddAsync(admin);
+        await userRepository.SaveChangesAsync();
     }
 }
