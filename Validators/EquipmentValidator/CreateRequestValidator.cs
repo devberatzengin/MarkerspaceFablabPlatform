@@ -5,7 +5,7 @@ namespace MakerspaceFablabPlatform.Validators.EquipmentValidator;
 
 public class CreateRequestValidator : AbstractValidator<CreateRequest>
 {
-    CreateRequestValidator()
+    public CreateRequestValidator()
     {
         RuleFor(request => request.Name)
             .NotEmpty().WithMessage("Name is required");

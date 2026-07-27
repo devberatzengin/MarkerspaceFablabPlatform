@@ -5,7 +5,7 @@ namespace MakerspaceFablabPlatform.Validators.EquipmentValidator;
 
 public class UpdateRequestValidator : AbstractValidator<UpdateRequest>
 {
-    UpdateRequestValidator()
+    public UpdateRequestValidator()
     {
         RuleFor(request => request.Id)
             .NotEmpty().WithMessage("Id is required");
