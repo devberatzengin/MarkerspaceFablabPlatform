@@ -8,6 +8,7 @@ using MakerspaceFablabPlatform.Entities.Enums;
 using MakerspaceFablabPlatform.Excepitons;
 using MakerspaceFablabPlatform.Services.Interfaces;
 using MakerspaceFablabPlatform.States.EquipmentStates;
+using Microsoft.EntityFrameworkCore;
 using ValidationException = FluentValidation.ValidationException;
 
 namespace MakerspaceFablabPlatform.Services;
@@ -45,15 +46,60 @@ public class EquipmentService : IEquipmentService
 
     }
 
-    public async Task<PagedResponse<Response>> GetAllAsync(CancellationToken token)
+    public async Task<PagedResponse<Response>> GetAllAsync(ListRequest request, CancellationToken token)
     {
-        var result = await _unitOfWork.Equipments.GetAllAsync(token);
-        
-        if (result is null)
-            throw new NotFoundException(nameof(Equipment), null);
+        var page = Math.Max(1, request.Page);
+        var pageSize = Math.Clamp(request.PageSize, 1, 100);
 
-        //return PagedResponse<results>; // PAGED RESPONSE DAHA TAM ÖĞRENMEDİM
-        return null;
+        var query = _unitOfWork.Equipments.Query();
+
+        if (request.Status is not null)
+            query = query.Where(e => e.Status == request.Status);
+
+        if (request.Type is not null)
+            query = query.Where(e => e.Type == request.Type);
+
+        if (request.PlacementType is not null)
+            query = query.Where(e => e.PlacementType == request.PlacementType);
+
+        if (!string.IsNullOrWhiteSpace(request.Search))
+        {
+            var pattern = $"%{request.Search.Trim()}%";
+            query = query.Where(e =>
+                EF.Functions.ILike(e.Name, pattern) ||
+                EF.Functions.ILike(e.Description, pattern));
+        }
+
+        var totalCount = await query.CountAsync(token);
+
+        var items = await query
+            .OrderByDescending(e => e.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(e => new Response
+            {
+                Id = e.Id,
+                Name = e.Name,
+                Description = e.Description,
+                Type = e.Type,
+                PlacementType = e.PlacementType,
+                Status = e.Status,
+                RequiredUserLevel = e.RequiredUserLevel,
+                IsDeleted = e.IsDeleted,
+                UsingById = e.UsingById,
+                AvailableAt = e.AvailableAt
+            })
+            .ToListAsync(token);
+
+        _logger.LogInformation("Listed {Count}/{Total} equipments (page {Page})", items.Count, totalCount, page);
+
+        return new PagedResponse<Response>
+        {
+            Items = items,
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = totalCount
+        };
     }
 
     public async Task<Response> CreateAsync(CreateRequest request, Guid currentUserId ,CancellationToken token)
