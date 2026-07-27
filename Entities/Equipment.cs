@@ -12,7 +12,8 @@ public class Equipment
     [DatabaseGenerated(DatabaseGeneratedOption.None)]
     public Guid Id { get; set; } = Guid.NewGuid();
     
-    [MaxLength(20)] 
+    [MaxLength(20)]
+    [Required]
     public string Name { get; set; } =  string.Empty;
     
     [MaxLength(100)]
@@ -29,7 +30,7 @@ public class Equipment
         
     [Required]
     [Range(minimum:1, maximum:10,ErrorMessage = "Equipment hard level must be between 1 and 10")]
-    public short EquipmentHardLevel { get; set; } =  1;
+    public short RequiredUserLevel { get; set; } =  1;
     
     [Required]
     public bool IsDeleted { get; set; } = false;
@@ -37,7 +38,7 @@ public class Equipment
     
     
     [Required]
-    public Guid UsingById { get; set; } 
+    public Guid UsingById { get; set; } = Guid.Empty;
     
     public User UsingBy { get; set; } = null!;
     

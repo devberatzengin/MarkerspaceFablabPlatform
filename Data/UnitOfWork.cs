@@ -12,6 +12,7 @@ public class UnitOfWork : IUnitOfWork
     private IAnnouncementRepository? _announcementRepository;
     private ICategoryRepository? _categoryRepository;
     private IUserRepository? _userRepository;
+    private IEquipmentRepository? _equipmentRepository;
 
     public IAnnouncementRepository Announcements => 
         _announcementRepository ??= new AnnouncementRepository(_dbContext);
@@ -21,7 +22,10 @@ public class UnitOfWork : IUnitOfWork
     
     public IUserRepository Users =>
         _userRepository ??= new UserRepository(_dbContext);
-    
+
+    public IEquipmentRepository Equipments => 
+        _equipmentRepository ??= new EquipmentRepository(_dbContext);
+
     public async Task<int> SaveChangesAsync(CancellationToken ct = default)
     {
         return await _dbContext.SaveChangesAsync(ct);
