@@ -3,6 +3,7 @@ using System;
 using MakerspaceFablabPlatform.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MakerspaceFablabPlatform.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260727131929_MakeUsingByIdNullable3")]
+    partial class MakeUsingByIdNullable3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -143,7 +146,7 @@ namespace MakerspaceFablabPlatform.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid?>("UsingById")
+                    b.Property<Guid>("UsingById")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
@@ -234,7 +237,8 @@ namespace MakerspaceFablabPlatform.Migrations
                     b.HasOne("MakerspaceFablabPlatform.Entities.User", "UsingBy")
                         .WithMany("Equipments")
                         .HasForeignKey("UsingById")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("UsingBy");
                 });
