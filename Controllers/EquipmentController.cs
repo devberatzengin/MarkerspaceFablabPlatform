@@ -27,11 +27,11 @@ public class EquipmentController : ControllerBase
        return Ok(result);
     }
 
-    [HttpGet] //KAPALI ŞUAN
-    public async Task<PagedResponse<Response>> GetAllAsync(CancellationToken token)
+    [HttpGet]
+    public async Task<ActionResult<PagedResponse<Response>>> GetAllAsync([FromQuery] ListRequest request, CancellationToken token)
     {
-        var result = await _equipmentService.GetAllAsync(token);
-        return null;
+        var result = await _equipmentService.GetAllAsync(request, token);
+        return Ok(result);
     }
 
     [HttpPost]
