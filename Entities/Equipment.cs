@@ -37,10 +37,9 @@ public class Equipment
     
     
     
-    [Required]
-    public Guid UsingById { get; set; } = Guid.Empty;
+    public Guid? UsingById { get; set; } = Guid.Empty;
     
-    public User UsingBy { get; set; } = null!;
+    public User? UsingBy { get; set; } = null!;
     
     
     

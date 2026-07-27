@@ -27,7 +27,7 @@ public class EquipmentConfiguration : IEntityTypeConfiguration<Equipment>
         builder.HasOne(e => e.UsingBy)
             .WithMany()
             .HasForeignKey(e => e.UsingById)
-            .IsRequired()
+            .IsRequired(false)
             .OnDelete(DeleteBehavior.Restrict);
         
     }
