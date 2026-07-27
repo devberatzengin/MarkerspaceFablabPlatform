@@ -44,16 +44,11 @@ public class Program
         });
 
         
-        // Db Connections
-        builder.Services.AddDbContext<AppDbContext>(options =>
-            options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-
         // Appdbcontext'i somut kullanMAmak için
         builder.Services.AddScoped<IApplicationDbContext>(sp => 
             sp.GetRequiredService<AppDbContext>());
         
         // For repository pattern 
-        builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
         // Unit Of Work Pattern
         builder.Services.AddDbContext<AppDbContext>(options =>
@@ -68,10 +63,16 @@ public class Program
         builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
         //builder.Services.AddScoped<IEventRepository, EventRepository>();
         builder.Services.AddScoped<IUserRepository, UserRepository>();
+        builder.Services.AddScoped<IEquipmentRepository, EquipmentRepository>();
+
+        // Auto Mapper for updaterequest => entity transaction
+        builder.Services.AddAutoMapper(cfg => { }, typeof(Program).Assembly);
 
         // Services
         builder.Services.AddScoped<ICategoryService, CategoryService>();
         builder.Services.AddScoped<IAnnouncementService, AnnouncementService>();
+        builder.Services.AddScoped<IEquipmentService, EquipmentService>();
+
         //builder.Services.AddScoped<IEventService, EventService>();
         builder.Services.AddScoped<TokenService>();
         builder.Services.AddScoped<IAuthService, AuthService>();
