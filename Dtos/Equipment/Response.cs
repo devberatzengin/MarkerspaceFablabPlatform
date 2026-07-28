@@ -22,7 +22,7 @@ public class Response
     
     public bool IsDeleted { get; set; } = false;
 
-    public Guid? UsingById { get; set; } = Guid.Empty;
+    public Guid? CurrentUserId { get; set; }
 
     public DateTime AvailableAt  { get; set; } = DateTime.UtcNow;
 }

@@ -19,7 +19,4 @@ public class UpdateRequest
     [Range(minimum:1, maximum:10,ErrorMessage = "Equipment hard level must be between 1 and 10")]
     public short? RequiredUserLevel { get; set; } =  1;
     
-    // Bunu şeyden koymuştum release ksımında bendeki update request kullamırız falan belli olmaz.
-    public Guid? UsingById { get; set; }
-
 }
