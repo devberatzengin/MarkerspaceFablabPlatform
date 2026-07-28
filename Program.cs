@@ -18,6 +18,9 @@ using MakerspaceFablabPlatform.Helpers;
 using Microsoft.AspNetCore.OpenApi;
 using Scalar.AspNetCore;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using MakerspaceFablabPlatform.Entities.Enums;
+using MakerspaceFablabPlatform.Strategies.MembershipStrategies;
 using Microsoft.Extensions.Caching.Memory;
 
 
@@ -122,7 +125,34 @@ public class Program
         
         builder.Services.AddAuthorization();
 
-
+        //Strategy
+        builder.Services.AddHttpContextAccessor();
+        builder.Services.AddScoped<IMembershipStrategy>(provider =>
+        {
+            var httpContext = provider.GetRequiredService<IHttpContextAccessor>();
+            var userRepository = provider.GetRequiredService<IUserRepository>();
+    
+            // Token'dan user ID al
+            var userId = httpContext.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    
+            if (userId != null && Guid.TryParse(userId, out var guidId))
+            {
+                // Database'den çek (Sync - .Result kullan)
+                var user = userRepository.GetByIdAsync(guidId).Result;
+        
+                return user?.Status switch
+                {
+                    MembershipStatus.Free => new FreeMembershipStrategy(),
+                    MembershipStatus.Bronze => new BronzeMembershipStrategy(),
+                    MembershipStatus.Silver => new SilverMembershipStrategy(),
+                    MembershipStatus.Gold => new GoldMembershipStrategy(),
+                    MembershipStatus.Professional => new ProfessionalMembershipStrategy(),
+                    _ => new FreeMembershipStrategy()
+                };
+            }
+    
+            return new FreeMembershipStrategy();
+        });
 
         
         // Exception 
