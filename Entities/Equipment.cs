@@ -35,13 +35,7 @@ public class Equipment
     [Required]
     public bool IsDeleted { get; set; } = false;
     
-    
-    
-    public Guid? UsingById { get; set; } = Guid.Empty;
-    
-    public User? UsingBy { get; set; } = null!;
-    
-    
+    public ICollection<EquipmentRental> EquipmentRentals { get; set; } = new List<EquipmentRental>();
     
     [Required]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
