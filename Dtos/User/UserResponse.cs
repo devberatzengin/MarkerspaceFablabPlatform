@@ -11,6 +11,7 @@ public class UserResponse
     public string Email { get; set; } = string.Empty;
     public string PhoneNumber { get; set; } = string.Empty;
     public UserType Type { get; set; } = UserType.User;
+    public MembershipStatus Status { get; set; } = MembershipStatus.Unknown;
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt  { get; set; } = DateTime.Now;
 }

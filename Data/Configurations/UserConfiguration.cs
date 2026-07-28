@@ -19,6 +19,10 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .HasConversion<string>()
             .IsRequired();
         
+        builder.Property(u => u.Status)
+            .HasConversion<string>()
+            .IsRequired();
+        
         builder.HasIndex(e => e.Email).IsUnique();
 
         builder.HasQueryFilter(u => !u.IsDeleted);

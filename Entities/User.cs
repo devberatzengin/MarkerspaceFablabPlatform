@@ -15,6 +15,9 @@ public class User
     public UserType Type { get; set; } = UserType.Unknown;
     
     [Required]
+    public MembershipStatus Status { get; set; } = MembershipStatus.Unknown;
+    
+    [Required]
     public string Username { get; set; } = string.Empty;
     
     [Required]

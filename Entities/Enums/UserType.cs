@@ -4,5 +4,6 @@ public enum UserType
 {
     Unknown,
     Admin,
-    User
+    User,
+    Staff
 }
