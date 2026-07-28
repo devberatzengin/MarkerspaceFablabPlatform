@@ -9,6 +9,7 @@ using MakerspaceFablabPlatform.Entities.Enums;
 using MakerspaceFablabPlatform.Excepitons;
 using MakerspaceFablabPlatform.Services.Interfaces;
 using MakerspaceFablabPlatform.States.EquipmentStates;
+using MakerspaceFablabPlatform.Strategies.MembershipStrategies;
 using Microsoft.EntityFrameworkCore;
 using ValidationException = FluentValidation.ValidationException;
 
@@ -24,9 +25,12 @@ public class EquipmentService : IEquipmentService
     
     private readonly IValidator<CreateRequest> _createValidator;
     private readonly IValidator<UpdateRequest> _updateValidator;
+    
+    private readonly IMembershipStrategy _membershipStrategy;
 
-    public EquipmentService(IMapper mapper, IUnitOfWork unitOfWork, IEquipmentRepository equipmentRepository, ILogger<EquipmentService> logger, IValidator<CreateRequest> createValidator, IValidator<UpdateRequest> updateValidator)
+    public EquipmentService(IMembershipStrategy strategy,IMapper mapper, IUnitOfWork unitOfWork, IEquipmentRepository equipmentRepository, ILogger<EquipmentService> logger, IValidator<CreateRequest> createValidator, IValidator<UpdateRequest> updateValidator)
     {
+        _membershipStrategy = strategy;
         _mapper = mapper;
         _unitOfWork = unitOfWork;
         _equipmentRepository = equipmentRepository;
@@ -113,7 +117,6 @@ public class EquipmentService : IEquipmentService
 
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
-            AvailableAt = DateTime.UtcNow
         };
         
          _unitOfWork.Equipments.AddAsync(newEquipment, token);
@@ -183,47 +186,60 @@ public class EquipmentService : IEquipmentService
     }
 
     public async Task<Response> RentAsync(Guid id, TimeSpan span, Guid currentUserId, CancellationToken token)
-    {
-        var result = await _unitOfWork.Equipments.GetByIdAsync(id, token);
-        
-        if (result is null)
+{
+        // 1. Equipment kontrol et
+        var equipment = await _unitOfWork.Equipments.GetByIdAsync(id, token);
+
+        if (equipment is null)
             throw new NotFoundException(nameof(Equipment), id);
-        
-        if (result.Status != EquipmentStatus.Available)
-            throw new ConflictException($"Equipment {result.Id} is not available");
 
-        if (result.AvailableAt > DateTime.UtcNow)
-            throw new ConflictException($"Equipment is not available until {result.AvailableAt:u}");
+        if (equipment.Status != EquipmentStatus.Available)
+            throw new ConflictException($"Equipment is not available");
 
-        if (result.PlacementType  != EquipmentPlacementType.Portable)
-            throw new ConflictException($"Equipment {result.Id} is not portable. You can just reserve it");
+        if (equipment.PlacementType != EquipmentPlacementType.Portable)
+            throw new ConflictException($"Equipment is not portable");
 
+        // 2. Aktif rental var mı kontrol et
+        var activeRental = await _unitOfWork.EquipmentRentals
+            .GetActiveByEquipmentIdAsync(id, token); // Aktif olanı çek
 
-        var state = GetStateFor(result.Status);
-        await state.RentedAsync(result, _unitOfWork);
+        if (activeRental is not null)
+            throw new ConflictException($"Equipment is already rented until {activeRental.ExpectedReturnAt:u}");
 
-        _logger.LogInformation($"Renting equipment {result.Id} to {currentUserId}");
-
-        
+        // 3. Yeni rental oluştur
         var rental = new EquipmentRental
         {
             UserId = currentUserId,
-            EquipmentId = result.Id,
+            EquipmentId = id,
             RentedAt = DateTime.UtcNow,
             ExpectedReturnAt = DateTime.UtcNow + span
         };
 
-        await _unitOfWork.EquipmentRentals.AddAsync(rental, token);
-        result.AvailableAt = rental.ExpectedReturnAt;
-        
-        _unitOfWork.Equipments.Update(result);
+        _unitOfWork.EquipmentRentals.AddAsync(rental);
+        equipment.Status = EquipmentStatus.Rented;
+        _unitOfWork.Equipments.Update(equipment);
+
         await _unitOfWork.SaveChangesAsync(token);
-        
-        return _mapper.Map<Response>(result);
+
+        return new Response
+        {
+            Id = equipment.Id,
+            Name = equipment.Name,
+            Description = equipment.Description,
+            Type = equipment.Type,
+            PlacementType = equipment.PlacementType,
+            Status = EquipmentStatus.Rented, // Rental'dan sonra status bu
+            RequiredUserLevel = equipment.RequiredUserLevel,
+            IsDeleted = equipment.IsDeleted,
+            CurrentUserId = currentUserId,
+            AvailableAt = rental.ExpectedReturnAt
+        };
+
     }
 
     public async Task<Response> ReserveAsync(Guid id, TimeSpan span, Guid currentUserId, CancellationToken token)
     {
+        /*
         var result = await _unitOfWork.Equipments.GetByIdAsync(id, token);
         
         if (result is null)
@@ -258,10 +274,13 @@ public class EquipmentService : IEquipmentService
         await _unitOfWork.SaveChangesAsync(token);
         
         return _mapper.Map<Response>(result);
+        */
+        return null;
     }
     
     public async Task<Response> ReleaseItAsync(Guid id, Guid currentUserId, CancellationToken token)
     {
+        /*
         var result = await _unitOfWork.Equipments.GetByIdAsync(id, token);
         
         if (result is null)
@@ -287,6 +306,8 @@ public class EquipmentService : IEquipmentService
         _logger.LogInformation($"Released equipment {result.Id} by {currentUserId}");
             
         return _mapper.Map<Response>(result);
+        */
+        return null;
     }
 
     public async Task<Response> SetMaintenanceAsync(Guid id, CancellationToken token)
