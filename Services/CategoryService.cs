@@ -67,26 +67,25 @@ public class CategoryService : ICategoryService
 
     public async Task<List<Response>> GetAllAsync(bool includeUnactivated = false)
     {
-        var categories = await _unitOfWork.Categories.Query()
-            .Where(c => includeUnactivated || c.IsActive)
-            .ToListAsync();
+        var categories = await _unitOfWork.Categories.GetAllAsync();
+
+        if (!includeUnactivated)
+            categories = categories.Where(c => c.IsActive).ToList();
 
         return _mapper.Map<List<Response>>(categories);
-        
     }
-    
-    public async Task<Response?> GetByIdAsync(Guid categoryId,bool includeUnactivated = false)
+
+    public async Task<Response?> GetByIdAsync(Guid categoryId, bool includeUnactivated = false)
     {
-        var category = await _unitOfWork.Categories.Query()                     // salt okuma (AsNoTracking varsayılan)
-            .Where(c => c.Id == categoryId)
-            .Where(c => includeUnactivated || c.IsActive)          // pasifler dahil mi?
-            .FirstOrDefaultAsync();
-        
+        var category = await _unitOfWork.Categories.GetByIdAsync(categoryId);
+
         if (category is null)
             throw new NotFoundException(nameof(Category), categoryId);
-        
-        return _mapper.Map<Response>(category);
 
+        if (!includeUnactivated && !category.IsActive)
+            throw new NotFoundException(nameof(Category), categoryId);
+
+        return _mapper.Map<Response>(category);
     }
 
     public async Task<Response?> UpdateAsync(UpdateRequest updateRequest)

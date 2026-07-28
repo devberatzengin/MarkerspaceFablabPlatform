@@ -7,6 +7,7 @@ using MakerspaceFablabPlatform.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 using MakerspaceFablabPlatform.Entities;
+using MakerspaceFablabPlatform.Data.CachedRepositoties;
 using MakerspaceFablabPlatform.Handlers;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -17,6 +18,7 @@ using MakerspaceFablabPlatform.Helpers;
 using Microsoft.AspNetCore.OpenApi;
 using Scalar.AspNetCore;
 using System.IdentityModel.Tokens.Jwt;
+using Microsoft.Extensions.Caching.Memory;
 
 
 namespace MakerspaceFablabPlatform;
@@ -60,7 +62,15 @@ public class Program
         // Repositories
         builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
         builder.Services.AddScoped<IAnnouncementRepository, AnnouncementRepository>();
-        builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+        builder.Services.AddMemoryCache();
+        builder.Services.AddScoped<CategoryRepository>();
+        builder.Services.AddScoped<ICategoryRepository>(sp =>
+        {
+            var inner = sp.GetRequiredService<CategoryRepository>();
+            var cache = sp.GetRequiredService<IMemoryCache>();
+            var logger = sp.GetRequiredService<ILogger<CachedCategoryRepository>>();
+            return new CachedCategoryRepository(inner, cache, logger);
+        });
         //builder.Services.AddScoped<IEventRepository, EventRepository>();
         builder.Services.AddScoped<IUserRepository, UserRepository>();
         builder.Services.AddScoped<IEquipmentRepository, EquipmentRepository>();
