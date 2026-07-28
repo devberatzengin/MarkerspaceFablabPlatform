@@ -1,3 +1,5 @@
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using MakerspaceFablabPlatform.Data.Interfaces;
 using MakerspaceFablabPlatform.Dtos.User;
 using MakerspaceFablabPlatform.Entities;
@@ -15,14 +17,16 @@ public class UserService : IUserService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUserRepository _userRepository; // Kullanmıyorum ama ne olur ne olmaz silmek istemiyorum
     private readonly ILogger<UserService> _logger;
+    private readonly IMapper _mapper;
     private readonly IValidator<UpdateRequest> _validator;
     private readonly IPasswordHasher<User> _passwordHasher;
 
-    public UserService(IUnitOfWork unitOfWork,IUserRepository userRepository, ILogger<UserService> logger, IValidator<UpdateRequest> validator, IPasswordHasher<User> passwordHasher)
+    public UserService(IUnitOfWork unitOfWork, IUserRepository userRepository, ILogger<UserService> logger, IMapper mapper, IValidator<UpdateRequest> validator, IPasswordHasher<User> passwordHasher)
     {
         _unitOfWork = unitOfWork;
         _userRepository = userRepository;
         _logger = logger;
+        _mapper = mapper;
         _validator = validator;
         _passwordHasher = passwordHasher;
     }
@@ -30,18 +34,7 @@ public class UserService : IUserService
     public async Task<List<UserResponse>> GetAllAsync()
     {
         return await _unitOfWork.Users.Query()
-            .Select(u => new UserResponse
-            {
-                Id = u.Id,
-                UserName =  u.Username,
-                FirstName = u.FirstName,
-                LastName = u.LastName,
-                PhoneNumber = u.PhoneNumber,
-                Email = u.Email,
-                Type = u.Type,
-                IsActive = u.IsActive,
-                CreatedAt =  u.CreatedAt
-            })
+            .ProjectTo<UserResponse>(_mapper.ConfigurationProvider)
             .ToListAsync();
     }
 
@@ -52,18 +45,7 @@ public class UserService : IUserService
         if (result is null)
             throw new NotFoundException(nameof(User), id);
 
-        return new UserResponse()
-        {
-            Id = result.Id,
-            Email = result.Email,
-            UserName = result.Username,
-            FirstName = result.FirstName,
-            LastName = result.LastName,
-            Type = result.Type,
-            PhoneNumber = result.PhoneNumber,
-            IsActive = result.IsActive,
-            CreatedAt = result.CreatedAt
-        };
+        return _mapper.Map<UserResponse>(result);
     }
 
     public async Task<UserResponse> UpdateAsync(Guid id, UpdateRequest request, Guid currentUserId)
@@ -94,20 +76,7 @@ public class UserService : IUserService
 
         _logger.LogInformation("Updated user {UserId}", dbUser.Id);
 
-        return new UserResponse()
-        {
-            Id = dbUser.Id,
-            Email = dbUser.Email,
-            UserName = dbUser.Username,
-
-            FirstName = dbUser.FirstName,
-            LastName = dbUser.LastName,
-            PhoneNumber = dbUser.PhoneNumber,
-
-            Type = dbUser.Type,
-            IsActive = dbUser.IsActive,
-            CreatedAt = dbUser.CreatedAt
-        };
+        return _mapper.Map<UserResponse>(dbUser);
 
     }
 

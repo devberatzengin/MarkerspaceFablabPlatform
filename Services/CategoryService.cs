@@ -1,3 +1,4 @@
+using AutoMapper;
 using MakerspaceFablabPlatform.Data.Interfaces;
 using MakerspaceFablabPlatform.Dtos.Category;
 using MakerspaceFablabPlatform.Entities;
@@ -16,13 +17,15 @@ public class CategoryService : ICategoryService
     private readonly IUnitOfWork _unitOfWork;
     private readonly ICategoryRepository _categoryRepository;
     private readonly ILogger<CategoryService> _logger;
+    private readonly IMapper _mapper;
     private readonly IValidator<CreateRequest> _createValidator;
     private readonly IValidator<UpdateRequest> _updateValidator;
-    public CategoryService(IUnitOfWork unitOfWork,ICategoryRepository categoryRepository, ILogger<CategoryService> logger, IValidator<CreateRequest> createValidator, IValidator<UpdateRequest> updateValidator)
+    public CategoryService(IUnitOfWork unitOfWork, ICategoryRepository categoryRepository, ILogger<CategoryService> logger, IMapper mapper, IValidator<CreateRequest> createValidator, IValidator<UpdateRequest> updateValidator)
     {
         _unitOfWork = unitOfWork;
         _categoryRepository = categoryRepository;
         _logger = logger;
+        _mapper = mapper;
         _createValidator = createValidator;
         _updateValidator = updateValidator;
     }
@@ -58,13 +61,7 @@ public class CategoryService : ICategoryService
         
         _logger.LogInformation("Created category {CategoryId} with name {Name}", newCategory.Id, newCategory.Name);
 
-        return new Response
-        {
-            Id = newCategory.Id,
-            Name = newCategory.Name,
-            Type = newCategory.Type,
-            IsActive = newCategory.IsActive
-        };
+        return _mapper.Map<Response>(newCategory);
         
     }
 
@@ -74,19 +71,7 @@ public class CategoryService : ICategoryService
             .Where(c => includeUnactivated || c.IsActive)
             .ToListAsync();
 
-        var responses = new List<Response>();
-        foreach (var category in categories)
-        {
-            responses.Add(new Response
-            {
-                Id = category.Id,
-                Name = category.Name,
-                Type = category.Type,
-                IsActive = category.IsActive
-            });
-        }
-        
-        return responses;
+        return _mapper.Map<List<Response>>(categories);
         
     }
     
@@ -100,13 +85,7 @@ public class CategoryService : ICategoryService
         if (category is null)
             throw new NotFoundException(nameof(Category), categoryId);
         
-        return new Response()
-        {
-            Id = category.Id,
-            Name = category.Name,
-            Type = category.Type,
-            IsActive = category.IsActive
-        };
+        return _mapper.Map<Response>(category);
 
     }
 
@@ -137,13 +116,7 @@ public class CategoryService : ICategoryService
 
         _logger.LogInformation("Updated category {CategoryId}", category.Id);
 
-        return new Response()
-        {
-            Id = category.Id,
-            Name = category.Name,
-            Type = category.Type,
-            IsActive = category.IsActive
-        };
+        return _mapper.Map<Response>(category);
     }
 
     public async Task<Response?> DeactivateAsync(Guid categoryId)
@@ -161,13 +134,7 @@ public class CategoryService : ICategoryService
 
         _logger.LogInformation("Deactivated category {CategoryId}", category.Id);
 
-        return new Response()
-        {
-            Id = category.Id,
-            Name = category.Name,
-            Type = category.Type,
-            IsActive = category.IsActive
-        };
+        return _mapper.Map<Response>(category);
 
     }
 

@@ -1,3 +1,5 @@
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using MakerspaceFablabPlatform.Data.Interfaces;
 using MakerspaceFablabPlatform.Dtos.Announcement;
 using MakerspaceFablabPlatform.Dtos.Common;
@@ -19,20 +21,22 @@ public class AnnouncementService : IAnnouncementService
     private readonly IAnnouncementRepository _announcementRepository;
     private readonly ICategoryRepository _categoryRepository;
     private readonly IUserRepository _userRepository;
-    
-    
+
+
     private readonly ILogger<AnnouncementService> _logger;
+    private readonly IMapper _mapper;
     private readonly IValidator<CreateRequest> _createValidator;
     private readonly IValidator<UpdateRequest> _updateValidator;
-    
-    
-    public AnnouncementService(IUnitOfWork unitOfWork,IAnnouncementRepository announcementRepository, ICategoryRepository categoryRepository, IUserRepository userRepository, ILogger<AnnouncementService> logger, IValidator<CreateRequest> createValidator, IValidator<UpdateRequest> updateValidator)
+
+
+    public AnnouncementService(IUnitOfWork unitOfWork, IAnnouncementRepository announcementRepository, ICategoryRepository categoryRepository, IUserRepository userRepository, ILogger<AnnouncementService> logger, IMapper mapper, IValidator<CreateRequest> createValidator, IValidator<UpdateRequest> updateValidator)
     {
         _unitOfWork = unitOfWork;
         _announcementRepository = announcementRepository;
         _categoryRepository = categoryRepository;
         _userRepository = userRepository;
         _logger = logger;
+        _mapper = mapper;
         _createValidator = createValidator;
         _updateValidator = updateValidator;
     }
@@ -47,7 +51,7 @@ public class AnnouncementService : IAnnouncementService
         if (!isAdmin && result.Status != ContentStatus.Published)
             throw new NotFoundException(nameof(Announcement), announcementId);
 
-        return ToResponse(result);
+        return _mapper.Map<Response>(result);
     }
 
     public async Task<PagedResponse<Response>> GetAllAsync(ListRequest request, bool isAdmin, CancellationToken cancellationToken = default)
@@ -88,19 +92,7 @@ public class AnnouncementService : IAnnouncementService
             .OrderByDescending(a => a.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(a => new Response
-            {
-                Id = a.Id,
-                Title = a.Title,
-                Content = a.Content,
-                CreatedByUserId = a.CreatedByUserId,
-                CreatedByName = a.CreatedBy.FirstName + " " + a.CreatedBy.LastName,
-                CategoryName = a.Category.Name,
-                CategoryId = a.CategoryId,
-                Status = a.Status,
-                CreatedAt = a.CreatedAt,
-                UpdatedAt = a.UpdatedAt
-            })
+            .ProjectTo<Response>(_mapper.ConfigurationProvider)
             .ToListAsync(cancellationToken);
 
         _logger.LogInformation("Listed {Count}/{Total} announcements (page {Page})", items.Count, totalCount, page);
@@ -153,20 +145,10 @@ public class AnnouncementService : IAnnouncementService
             
         _logger.LogInformation("Created announcement {AnnouncementId} with title {Title} by user {UserId}", newAnnouncement.Id, title, currentUserId);
         
-        return new Response()
-        {
-            Id = newAnnouncement.Id,
-            Title = newAnnouncement.Title,
-            Content = newAnnouncement.Content,
-            CreatedByUserId = newAnnouncement.CreatedByUserId,
-            CreatedByName = creator.FirstName + " " + creator.LastName,
-
-            CategoryName = category.Name,
-            CategoryId = newAnnouncement.CategoryId,
-            Status = newAnnouncement.Status,
-            CreatedAt = newAnnouncement.CreatedAt,
-            UpdatedAt = newAnnouncement.UpdatedAt
-        };
+        var response = _mapper.Map<Response>(newAnnouncement);
+        response.CreatedByName = creator.FirstName + " " + creator.LastName;
+        response.CategoryName = category.Name;
+        return response;
 
     }
 
@@ -208,7 +190,7 @@ public class AnnouncementService : IAnnouncementService
 
         _logger.LogInformation("Updated announcement {AnnouncementId} with title {Title} by user {UserId}", announcement.Id, title, currentUserId);
 
-        return ToResponse(announcement);
+        return _mapper.Map<Response>(announcement);
     }
 
     public async Task<Response?> PublishAsync(Guid announcementId, Guid currentUserId)
@@ -223,7 +205,7 @@ public class AnnouncementService : IAnnouncementService
         
         _logger.LogInformation("Published announcement {AnnouncementId} by user {UserId}", announcement.Id, currentUserId);
 
-        return ToResponse(announcement);
+        return _mapper.Map<Response>(announcement);
     }
 
     public async Task<Response?> UnpublishAsync(Guid announcementId, Guid currentUserId)
@@ -238,7 +220,7 @@ public class AnnouncementService : IAnnouncementService
 
         _logger.LogInformation("Unpublished announcement {AnnouncementId} by user {UserId}", announcement.Id, currentUserId);
 
-        return ToResponse(announcement);
+        return _mapper.Map<Response>(announcement);
     }
 
     public async Task<bool> ArchiveAsync(Guid announcementId, Guid currentUserId)
@@ -255,20 +237,6 @@ public class AnnouncementService : IAnnouncementService
 
         return true;
     }
-
-    private static Response ToResponse(Announcement a) => new()
-    {
-        Id = a.Id,
-        Title = a.Title,
-        Content = a.Content,
-        CreatedByUserId = a.CreatedByUserId,
-        CreatedByName = a.CreatedBy.FirstName + " " + a.CreatedBy.LastName,
-        CategoryName = a.Category.Name,
-        CategoryId = a.CategoryId,
-        Status = a.Status,
-        CreatedAt = a.CreatedAt,
-        UpdatedAt = a.UpdatedAt
-    };
 
     private IAnnouncementState GetStateFor(ContentStatus status)
     {

@@ -16,5 +16,6 @@ public interface IEquipmentService
     Task<Response> ReserveAsync(Guid id,TimeSpan span, Guid currentUserId, CancellationToken token);
     
     Task<Response> ReleaseItAsync(Guid id, Guid currentUserId, CancellationToken token);
+    Task<Response> SetMaintenanceAsync(Guid id, CancellationToken token);
     
 }

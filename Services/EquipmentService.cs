@@ -1,4 +1,5 @@
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using FluentValidation;
 using MakerspaceFablabPlatform.Data.Interfaces;
 using MakerspaceFablabPlatform.Dtos.Common;
@@ -42,7 +43,7 @@ public class EquipmentService : IEquipmentService
         if (result is null)
             throw new NotFoundException(nameof(Equipment), id);
 
-        return ToResponse(result);
+        return _mapper.Map<Response>(result);
 
     }
 
@@ -76,19 +77,7 @@ public class EquipmentService : IEquipmentService
             .OrderByDescending(e => e.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(e => new Response
-            {
-                Id = e.Id,
-                Name = e.Name,
-                Description = e.Description,
-                Type = e.Type,
-                PlacementType = e.PlacementType,
-                Status = e.Status,
-                RequiredUserLevel = e.RequiredUserLevel,
-                IsDeleted = e.IsDeleted,
-                UsingById = e.UsingById,
-                AvailableAt = e.AvailableAt
-            })
+            .ProjectTo<Response>(_mapper.ConfigurationProvider)
             .ToListAsync(token);
 
         _logger.LogInformation("Listed {Count}/{Total} equipments (page {Page})", items.Count, totalCount, page);
@@ -132,7 +121,7 @@ public class EquipmentService : IEquipmentService
          _unitOfWork.Equipments.AddAsync(newEquipment, token);
         await _unitOfWork.SaveChangesAsync(token);
         
-        return ToResponse(newEquipment);
+        return _mapper.Map<Response>(newEquipment);
     }
 
     public async Task<Response> UpdateAsync(UpdateRequest request, Guid currentUserId, CancellationToken token)
@@ -174,7 +163,7 @@ public class EquipmentService : IEquipmentService
         _unitOfWork.Equipments.Update(dbEquipment);
         await _unitOfWork.Equipments.SaveChangesAsync(token);
 
-        return ToResponse(dbEquipment);
+        return _mapper.Map<Response>(dbEquipment);
     }
     
     //Admin methodu zaten
@@ -191,7 +180,7 @@ public class EquipmentService : IEquipmentService
         
         await _unitOfWork.Equipments.SaveChangesAsync(token);
         
-        return ToResponse(result);
+        return _mapper.Map<Response>(result);
         
     }
 
@@ -203,10 +192,13 @@ public class EquipmentService : IEquipmentService
             throw new NotFoundException(nameof(Equipment), id);
         
         if (result.Status != EquipmentStatus.Available)
-            throw new Exception($"Equipment {result.Id} is not available");
+            throw new ConflictException($"Equipment {result.Id} is not available");
+
+        if (result.AvailableAt > DateTime.UtcNow)
+            throw new ConflictException($"Equipment is not available until {result.AvailableAt:u}");
 
         if (result.PlacementType  != EquipmentPlacementType.Portable)
-            throw new Exception($"Equipment {result.Id} is not portable. You van just reserve it");
+            throw new ConflictException($"Equipment {result.Id} is not portable. You can just reserve it");
 
 
         var state = GetStateFor(result.Status); 
@@ -218,7 +210,7 @@ public class EquipmentService : IEquipmentService
         _unitOfWork.Equipments.Update(result);
         await _unitOfWork.Equipments.SaveChangesAsync(token);
         
-        return ToResponse(result);
+        return _mapper.Map<Response>(result);
         
     }
 
@@ -231,10 +223,13 @@ public class EquipmentService : IEquipmentService
             throw new NotFoundException(nameof(Equipment), id);
         
         if (result.Status != EquipmentStatus.Available)
-            throw new Exception($"Equipment {result.Id} is not available");
+            throw new ConflictException($"Equipment {result.Id} is not available");
+
+        if (result.AvailableAt > DateTime.UtcNow)
+            throw new ConflictException($"Equipment is not available until {result.AvailableAt:u}");
 
         if (result.PlacementType  == EquipmentPlacementType.Portable)
-            throw new Exception($"Equipment {result.Id} is portable. You can just rent it not reserve it");
+            throw new ConflictException($"Equipment {result.Id} is portable. You can just rent it not reserve it");
 
 
         var state =  GetStateFor(result.Status); 
@@ -246,7 +241,7 @@ public class EquipmentService : IEquipmentService
         _unitOfWork.Equipments.Update(result);
         await _unitOfWork.Equipments.SaveChangesAsync(token);
         
-        return ToResponse(result);
+        return _mapper.Map<Response>(result);
         
     }
     
@@ -274,24 +269,28 @@ public class EquipmentService : IEquipmentService
         
         await _unitOfWork.Equipments.SaveChangesAsync(token);
             
-        return ToResponse(result);
+        return _mapper.Map<Response>(result);
     }
 
-    
-    
-    private static Response ToResponse(Equipment equipment) => new()
+    public async Task<Response> SetMaintenanceAsync(Guid id, CancellationToken token)
     {
-        Id = equipment.Id,
-        Name = equipment.Name,
-        Description = equipment.Description,
-        Type = equipment.Type,
-        PlacementType = equipment.PlacementType,
-        Status = equipment.Status,
-        RequiredUserLevel = equipment.RequiredUserLevel,
-        IsDeleted = equipment.IsDeleted,
-        UsingById = equipment.UsingById,
-        AvailableAt = equipment.AvailableAt
-    };
+        var result = await _unitOfWork.Equipments.GetByIdAsync(id, token);
+
+        if (result is null)
+            throw new NotFoundException(nameof(Equipment), id);
+
+        var state = GetStateFor(result.Status);
+        await state.MaintenanceAsync(result, _unitOfWork);
+
+        result.UsingById = null;
+        result.UpdatedAt = DateTime.UtcNow;
+
+        _unitOfWork.Equipments.Update(result);
+        await _unitOfWork.Equipments.SaveChangesAsync(token);
+
+        return _mapper.Map<Response>(result);
+    }
+
     private IEquipmentState GetStateFor(EquipmentStatus status)
     {
         return status switch
