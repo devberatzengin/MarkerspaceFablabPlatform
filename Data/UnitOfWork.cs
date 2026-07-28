@@ -1,5 +1,4 @@
 using MakerspaceFablabPlatform.Data.Interfaces;
-using MakerspaceFablabPlatform.Data.Repositories;
 
 namespace MakerspaceFablabPlatform.Data;
 
@@ -7,28 +6,29 @@ public class UnitOfWork : IUnitOfWork
 {
     
     private readonly AppDbContext _dbContext;
+    private readonly IAnnouncementRepository _announcementRepository;
     private readonly ICategoryRepository _categoryRepository;
+    private readonly IUserRepository _userRepository;
+    private readonly IEquipmentRepository _equipmentRepository;
 
-    public UnitOfWork(AppDbContext dbContext, ICategoryRepository categoryRepository)
+    public UnitOfWork(
+        AppDbContext dbContext,
+        IAnnouncementRepository announcementRepository,
+        ICategoryRepository categoryRepository,
+        IUserRepository userRepository,
+        IEquipmentRepository equipmentRepository)
     {
         _dbContext = dbContext;
+        _announcementRepository = announcementRepository;
         _categoryRepository = categoryRepository;
+        _userRepository = userRepository;
+        _equipmentRepository = equipmentRepository;
     }
 
-    private IAnnouncementRepository? _announcementRepository;
-    private IUserRepository? _userRepository;
-    private IEquipmentRepository? _equipmentRepository;
-
-    public IAnnouncementRepository Announcements =>
-        _announcementRepository ??= new AnnouncementRepository(_dbContext);
-
+    public IAnnouncementRepository Announcements => _announcementRepository;
     public ICategoryRepository Categories => _categoryRepository;
-
-    public IUserRepository Users =>
-        _userRepository ??= new UserRepository(_dbContext);
-
-    public IEquipmentRepository Equipments =>
-        _equipmentRepository ??= new EquipmentRepository(_dbContext);
+    public IUserRepository Users => _userRepository;
+    public IEquipmentRepository Equipments => _equipmentRepository;
 
     public async Task<int> SaveChangesAsync(CancellationToken ct = default)
     {
