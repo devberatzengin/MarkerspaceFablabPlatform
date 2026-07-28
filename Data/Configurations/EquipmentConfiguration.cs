@@ -24,10 +24,9 @@ public class EquipmentConfiguration : IEntityTypeConfiguration<Equipment>
         
         builder.HasQueryFilter(u => !u.IsDeleted);
         
-        builder.HasOne(e => e.UsingBy)
-            .WithMany()
-            .HasForeignKey(e => e.UsingById)
-            .IsRequired(false)
+        builder.HasMany(e => e.EquipmentRentals)
+            .WithOne(r => r.Equipment)
+            .HasForeignKey(r => r.EquipmentId)
             .OnDelete(DeleteBehavior.Restrict);
         
     }
