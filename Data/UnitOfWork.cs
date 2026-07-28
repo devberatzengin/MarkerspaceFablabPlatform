@@ -7,23 +7,27 @@ public class UnitOfWork : IUnitOfWork
 {
     
     private readonly AppDbContext _dbContext;
-    public UnitOfWork(AppDbContext dbContext) { _dbContext = dbContext; }
-    
+    private readonly ICategoryRepository _categoryRepository;
+
+    public UnitOfWork(AppDbContext dbContext, ICategoryRepository categoryRepository)
+    {
+        _dbContext = dbContext;
+        _categoryRepository = categoryRepository;
+    }
+
     private IAnnouncementRepository? _announcementRepository;
-    private ICategoryRepository? _categoryRepository;
     private IUserRepository? _userRepository;
     private IEquipmentRepository? _equipmentRepository;
 
-    public IAnnouncementRepository Announcements => 
+    public IAnnouncementRepository Announcements =>
         _announcementRepository ??= new AnnouncementRepository(_dbContext);
 
-    public ICategoryRepository Categories =>
-        _categoryRepository ??= new CategoryRepository(_dbContext);
-    
+    public ICategoryRepository Categories => _categoryRepository;
+
     public IUserRepository Users =>
         _userRepository ??= new UserRepository(_dbContext);
 
-    public IEquipmentRepository Equipments => 
+    public IEquipmentRepository Equipments =>
         _equipmentRepository ??= new EquipmentRepository(_dbContext);
 
     public async Task<int> SaveChangesAsync(CancellationToken ct = default)

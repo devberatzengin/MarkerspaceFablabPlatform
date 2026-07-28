@@ -27,8 +27,11 @@ public class Repository<T> : IRepository<T> where T : class
     public Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default) =>
         DbSet.AnyAsync(predicate, cancellationToken);
 
-    public async Task AddAsync(T entity, CancellationToken cancellationToken = default) =>
+    public async Task<T> AddAsync(T entity, CancellationToken cancellationToken = default)
+    {
         await DbSet.AddAsync(entity, cancellationToken);
+        return entity;
+    }
 
     public void Update(T entity) => DbSet.Update(entity);
 
