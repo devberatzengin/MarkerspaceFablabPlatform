@@ -10,6 +10,7 @@ public interface IApplicationDbContext
     DbSet<Category> Categories { get; }
     DbSet<User> Users { get; }
     DbSet<Equipment> Equipments { get; }
+    DbSet<EquipmentRental> EquipmentRentals { get; }
     
     DbSet<T> Set<T>() where T : class;  
     

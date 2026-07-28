@@ -11,11 +11,11 @@ public class EquipmentRepository : Repository<Equipment>, IEquipmentRepository
     {
     }
     
-    public async Task<User?> GetEquipmentsUser(Equipment equipment, CancellationToken cancellationToken = default)
+    public async Task<User?> GetCurrentUserAsync(Guid equipmentId, CancellationToken cancellationToken = default)
     {
-        return await Query()
-            .Where(e => e.Id == equipment.Id)
-            .Select(e => e.UsingBy)
+        return await DbContext.EquipmentRentals
+            .Where(r => r.EquipmentId == equipmentId && r.ReleasedAt == null)
+            .Select(r => r.User)
             .FirstOrDefaultAsync(cancellationToken);
     }
 }

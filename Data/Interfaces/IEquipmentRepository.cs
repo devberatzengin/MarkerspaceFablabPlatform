@@ -6,7 +6,7 @@ namespace MakerspaceFablabPlatform.Data.Interfaces;
 public interface IEquipmentRepository : IRepository<Equipment>
 {
     // işte burdan dicez ki ilgilli equipment'ın kime gideceğini belirlicez falan 
-    Task<User?> GetEquipmentsUser(Equipment equipment, CancellationToken cancellationToken = default);
+    Task<User?> GetCurrentUserAsync(Guid equipmentId, CancellationToken cancellationToken = default);
     
     // add update remove var zaten
     // get all , Get by id de var
