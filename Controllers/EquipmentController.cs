@@ -60,27 +60,34 @@ public class EquipmentController : ControllerBase
 
 
     [HttpPatch("{id:guid}/rent")]
-    public async Task<ActionResult<Response>> RentAsync(Guid id, TimeSpan span, Guid currentUserId, CancellationToken token)
+    public async Task<ActionResult<Response>> RentAsync(Guid id, TimeSpan span, CancellationToken token)
     {
         var result = await _equipmentService.RentAsync(id, span, GetCurrentUserId(), token);
         return Ok(result);
     }
 
     [HttpPatch("{id:guid}/reserve")]
-    public async Task<ActionResult<Response>> ReserveAsync(Guid id, TimeSpan span, Guid currentUserId, CancellationToken token)
+    public async Task<ActionResult<Response>> ReserveAsync(Guid id, TimeSpan span, CancellationToken token)
     {
         var result = await _equipmentService.ReserveAsync(id, span, GetCurrentUserId(), token);
         return Ok(result);
     }
 
     [HttpPatch("{id:guid}/release")]
-    public async Task<ActionResult<Response>> ReleaseItAsync(Guid id, Guid currentUserId, CancellationToken token)
+    public async Task<ActionResult<Response>> ReleaseItAsync(Guid id, CancellationToken token)
     {
         var result = await _equipmentService.ReleaseItAsync(id, currentUserId:GetCurrentUserId(), token);
         return Ok(result);
     }
-    
-    
+
+    [HttpPatch("{id:guid}/maintenance")]
+    public async Task<ActionResult<Response>> SetMaintenanceAsync(Guid id, CancellationToken token)
+    {
+        var result = await _equipmentService.SetMaintenanceAsync(id, token);
+        return Ok(result);
+    }
+
+
     private Guid GetCurrentUserId()
     {
         var value = User.FindFirstValue(ClaimTypes.NameIdentifier)
