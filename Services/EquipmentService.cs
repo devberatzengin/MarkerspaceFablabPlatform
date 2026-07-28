@@ -25,7 +25,7 @@ public class EquipmentService : IEquipmentService
     private readonly IValidator<CreateRequest> _createValidator;
     private readonly IValidator<UpdateRequest> _updateValidator;
 
-    public EquipmentService(IMapper mapper,IUnitOfWork unitOfWork,IEquipmentRepository equipmentRepository, ILogger<EquipmentService> logger, IValidator<CreateRequest> createValidator, IValidator<UpdateRequest> updateValidator)
+    public EquipmentService(IMapper mapper, IUnitOfWork unitOfWork, IEquipmentRepository equipmentRepository, ILogger<EquipmentService> logger, IValidator<CreateRequest> createValidator, IValidator<UpdateRequest> updateValidator)
     {
         _mapper = mapper;
         _unitOfWork = unitOfWork;
@@ -110,8 +110,6 @@ public class EquipmentService : IEquipmentService
             RequiredUserLevel = request.RequiredUserLevel,
 
             IsDeleted = false,
-
-            UsingById = null,  
 
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
@@ -201,22 +199,31 @@ public class EquipmentService : IEquipmentService
             throw new ConflictException($"Equipment {result.Id} is not portable. You can just reserve it");
 
 
-        var state = GetStateFor(result.Status); 
-        await state.RentedAsync(result,_unitOfWork);
+        var state = GetStateFor(result.Status);
+        await state.RentedAsync(result, _unitOfWork);
 
-        result.UsingById = currentUserId;
-        result.AvailableAt = DateTime.UtcNow + span;
+        _logger.LogInformation($"Renting equipment {result.Id} to {currentUserId}");
+
+        
+        var rental = new EquipmentRental
+        {
+            UserId = currentUserId,
+            EquipmentId = result.Id,
+            RentedAt = DateTime.UtcNow,
+            ExpectedReturnAt = DateTime.UtcNow + span
+        };
+
+        await _unitOfWork.EquipmentRentals.AddAsync(rental, token);
+        result.AvailableAt = rental.ExpectedReturnAt;
         
         _unitOfWork.Equipments.Update(result);
-        await _unitOfWork.Equipments.SaveChangesAsync(token);
+        await _unitOfWork.SaveChangesAsync(token);
         
         return _mapper.Map<Response>(result);
-        
     }
 
     public async Task<Response> ReserveAsync(Guid id, TimeSpan span, Guid currentUserId, CancellationToken token)
     {
-        
         var result = await _unitOfWork.Equipments.GetByIdAsync(id, token);
         
         if (result is null)
@@ -228,21 +235,29 @@ public class EquipmentService : IEquipmentService
         if (result.AvailableAt > DateTime.UtcNow)
             throw new ConflictException($"Equipment is not available until {result.AvailableAt:u}");
 
-        if (result.PlacementType  == EquipmentPlacementType.Portable)
+        if (result.PlacementType == EquipmentPlacementType.Portable)
             throw new ConflictException($"Equipment {result.Id} is portable. You can just rent it not reserve it");
 
+        var state = GetStateFor(result.Status);
+        await state.ReservedAsync(result, _unitOfWork);
 
-        var state =  GetStateFor(result.Status); 
-        await state.ReservedAsync(result,_unitOfWork);
+        _logger.LogInformation($"Reserving equipment {result.Id} to {currentUserId}");
+        
+        var rental = new EquipmentRental
+        {
+            UserId = currentUserId,
+            EquipmentId = result.Id,
+            RentedAt = DateTime.UtcNow,
+            ExpectedReturnAt = DateTime.UtcNow + span
+        };
 
-        result.UsingById = currentUserId;
-        result.AvailableAt = DateTime.UtcNow + span;
+        await _unitOfWork.EquipmentRentals.AddAsync(rental, token);
+        result.AvailableAt = rental.ExpectedReturnAt;
         
         _unitOfWork.Equipments.Update(result);
-        await _unitOfWork.Equipments.SaveChangesAsync(token);
+        await _unitOfWork.SaveChangesAsync(token);
         
         return _mapper.Map<Response>(result);
-        
     }
     
     public async Task<Response> ReleaseItAsync(Guid id, Guid currentUserId, CancellationToken token)
@@ -252,22 +267,24 @@ public class EquipmentService : IEquipmentService
         if (result is null)
             throw new NotFoundException(nameof(Equipment), id);
         
-        if (result.UsingById is null)
-            throw new UnauthorizedAccessException("This equipment is not yet used by someone");
+        var activeRental = await _unitOfWork.EquipmentRentals.GetActiveRentalAsync(id, token);
         
-        if (result.UsingById != currentUserId)
-            throw new UnauthorizedAccessException("It's not your equipment");
+        if (activeRental is null)
+            throw new ConflictException("This equipment is not currently rented");
 
+        if (activeRental.UserId != currentUserId)
+            throw new ForbiddenException("This equipment is not rented by you");
         
         var state = GetStateFor(result.Status);
-        await state.AvailableAsync(result,_unitOfWork);
-        result.UsingById = null;
+        await state.AvailableAsync(result, _unitOfWork);
         
+        activeRental.ReleasedAt = DateTime.UtcNow;
         result.AvailableAt = DateTime.UtcNow.AddHours(1);
         
         _unitOfWork.Equipments.Update(result);
+        await _unitOfWork.SaveChangesAsync(token);
         
-        await _unitOfWork.Equipments.SaveChangesAsync(token);
+        _logger.LogInformation($"Released equipment {result.Id} by {currentUserId}");
             
         return _mapper.Map<Response>(result);
     }
@@ -282,11 +299,15 @@ public class EquipmentService : IEquipmentService
         var state = GetStateFor(result.Status);
         await state.MaintenanceAsync(result, _unitOfWork);
 
-        result.UsingById = null;
+        var activeRental = await _unitOfWork.EquipmentRentals.GetActiveRentalAsync(id, token);
+
+        if (activeRental is not null)
+            activeRental.ReleasedAt = DateTime.UtcNow;
+
         result.UpdatedAt = DateTime.UtcNow;
 
         _unitOfWork.Equipments.Update(result);
-        await _unitOfWork.Equipments.SaveChangesAsync(token);
+        await _unitOfWork.SaveChangesAsync(token);
 
         return _mapper.Map<Response>(result);
     }

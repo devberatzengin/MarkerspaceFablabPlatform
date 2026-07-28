@@ -74,6 +74,7 @@ public class Program
         //builder.Services.AddScoped<IEventRepository, EventRepository>();
         builder.Services.AddScoped<IUserRepository, UserRepository>();
         builder.Services.AddScoped<IEquipmentRepository, EquipmentRepository>();
+        builder.Services.AddScoped<IEquipmentRentalRepository, EquipmentRentalRepository>();
 
         // Auto Mapper for updaterequest => entity transaction
         builder.Services.AddAutoMapper(cfg => { }, typeof(Program).Assembly);
