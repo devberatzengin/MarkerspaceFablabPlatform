@@ -187,26 +187,24 @@ public class EquipmentService : IEquipmentService
 
     public async Task<Response> RentAsync(Guid id, TimeSpan span, Guid currentUserId, CancellationToken token)
 {
-        // 1. Equipment kontrol et
         var equipment = await _unitOfWork.Equipments.GetByIdAsync(id, token);
 
         if (equipment is null)
             throw new NotFoundException(nameof(Equipment), id);
 
-        if (equipment.Status != EquipmentStatus.Available)
+        if (equipment.Status != EquipmentStatus.Available) 
             throw new ConflictException($"Equipment is not available");
 
         if (equipment.PlacementType != EquipmentPlacementType.Portable)
             throw new ConflictException($"Equipment is not portable");
 
-        // 2. Aktif rental var mı kontrol et
-        var activeRental = await _unitOfWork.EquipmentRentals
-            .GetActiveByEquipmentIdAsync(id, token); // Aktif olanı çek
-
-        if (activeRental is not null)
-            throw new ConflictException($"Equipment is already rented until {activeRental.ExpectedReturnAt:u}");
-
-        // 3. Yeni rental oluştur
+        var activerentcount = await _unitOfWork.EquipmentRentals.GetActiveRentalCountByUserAsync(currentUserId, token);
+        
+        _logger.LogWarning(_membershipStrategy.CalculateMaximumEquipmentCount().ToString() + " | "+ $"{activerentcount}");
+    
+        if (activerentcount >= _membershipStrategy.CalculateMaximumEquipmentCount())
+            throw new ValidationException($"{currentUserId} cannot rent any more. Already have {activerentcount}");
+    
         var rental = new EquipmentRental
         {
             UserId = currentUserId,
@@ -215,7 +213,7 @@ public class EquipmentService : IEquipmentService
             ExpectedReturnAt = DateTime.UtcNow + span
         };
 
-        _unitOfWork.EquipmentRentals.AddAsync(rental);
+        await _unitOfWork.EquipmentRentals.AddAsync(rental);
         equipment.Status = EquipmentStatus.Rented;
         _unitOfWork.Equipments.Update(equipment);
 
@@ -239,54 +237,62 @@ public class EquipmentService : IEquipmentService
 
     public async Task<Response> ReserveAsync(Guid id, TimeSpan span, Guid currentUserId, CancellationToken token)
     {
-        /*
-        var result = await _unitOfWork.Equipments.GetByIdAsync(id, token);
+        var equipment = await _unitOfWork.Equipments.GetByIdAsync(id, token);
         
-        if (result is null)
+        if (equipment is null)
             throw new NotFoundException(nameof(Equipment), id);
         
-        if (result.Status != EquipmentStatus.Available)
-            throw new ConflictException($"Equipment {result.Id} is not available");
+        if (equipment.Status != EquipmentStatus.Available) 
+            throw new ConflictException($"Equipment is not available");
 
-        if (result.AvailableAt > DateTime.UtcNow)
-            throw new ConflictException($"Equipment is not available until {result.AvailableAt:u}");
+        if (equipment.PlacementType != EquipmentPlacementType.Benchtop ||equipment.PlacementType != EquipmentPlacementType.FloorStationary)
+            throw new ConflictException($"Equipment is portable, is have to be Benchtop or FloorStationary");
 
-        if (result.PlacementType == EquipmentPlacementType.Portable)
-            throw new ConflictException($"Equipment {result.Id} is portable. You can just rent it not reserve it");
+        var activereservecount = await _unitOfWork.EquipmentRentals.GetActiveRentalCountByUserAsync(currentUserId, token);
 
-        var state = GetStateFor(result.Status);
-        await state.ReservedAsync(result, _unitOfWork);
+        _logger.LogWarning(_membershipStrategy.CalculateMaximumEquipmentCount().ToString() + " | "+ $"{activereservecount}");
 
-        _logger.LogInformation($"Reserving equipment {result.Id} to {currentUserId}");
+        if (activereservecount >= _membershipStrategy.CalculateMaximumEquipmentCount())
+            throw new ValidationException($"{currentUserId} cannot reserve any more. Already have {activereservecount}");
         
         var rental = new EquipmentRental
         {
             UserId = currentUserId,
-            EquipmentId = result.Id,
+            EquipmentId = id,
             RentedAt = DateTime.UtcNow,
             ExpectedReturnAt = DateTime.UtcNow + span
         };
 
-        await _unitOfWork.EquipmentRentals.AddAsync(rental, token);
-        result.AvailableAt = rental.ExpectedReturnAt;
+        await _unitOfWork.EquipmentRentals.AddAsync(rental);
+        equipment.Status = EquipmentStatus.Reserved;
+        _unitOfWork.Equipments.Update(equipment);
         
-        _unitOfWork.Equipments.Update(result);
         await _unitOfWork.SaveChangesAsync(token);
         
-        return _mapper.Map<Response>(result);
-        */
-        return null;
+        return new Response
+        {
+            Id = equipment.Id,
+            Name = equipment.Name,
+            Description = equipment.Description,
+            Type = equipment.Type,
+            PlacementType = equipment.PlacementType,
+            Status = EquipmentStatus.Reserved,
+            RequiredUserLevel = equipment.RequiredUserLevel,
+            IsDeleted = equipment.IsDeleted,
+            CurrentUserId = currentUserId,
+            AvailableAt = rental.ExpectedReturnAt
+        };
+
     }
     
     public async Task<Response> ReleaseItAsync(Guid id, Guid currentUserId, CancellationToken token)
     {
-        /*
-        var result = await _unitOfWork.Equipments.GetByIdAsync(id, token);
+        var equipment = await _unitOfWork.Equipments.GetByIdAsync(id, token);
         
-        if (result is null)
+        if (equipment is null)
             throw new NotFoundException(nameof(Equipment), id);
         
-        var activeRental = await _unitOfWork.EquipmentRentals.GetActiveRentalAsync(id, token);
+        var activeRental = await _unitOfWork.EquipmentRentals.GetByEquipmentIdAsync(id, token);
         
         if (activeRental is null)
             throw new ConflictException("This equipment is not currently rented");
@@ -294,20 +300,16 @@ public class EquipmentService : IEquipmentService
         if (activeRental.UserId != currentUserId)
             throw new ForbiddenException("This equipment is not rented by you");
         
-        var state = GetStateFor(result.Status);
-        await state.AvailableAsync(result, _unitOfWork);
+        var state = GetStateFor(equipment.Status);
+        await state.AvailableAsync(equipment, _unitOfWork);
         
         activeRental.ReleasedAt = DateTime.UtcNow;
-        result.AvailableAt = DateTime.UtcNow.AddHours(1);
+        _unitOfWork.EquipmentRentals.Update(activeRental);
+        await _unitOfWork.EquipmentRentals.SaveChangesAsync(token);
         
-        _unitOfWork.Equipments.Update(result);
-        await _unitOfWork.SaveChangesAsync(token);
+        _logger.LogInformation($"Released equipment {equipment.Id} by {currentUserId}");
         
-        _logger.LogInformation($"Released equipment {result.Id} by {currentUserId}");
-            
-        return _mapper.Map<Response>(result);
-        */
-        return null;
+        return _mapper.Map<Response>(equipment);
     }
 
     public async Task<Response> SetMaintenanceAsync(Guid id, CancellationToken token)
