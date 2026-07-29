@@ -1,6 +1,5 @@
-using System.Security.Claims;
 using MakerspaceFablabPlatform.Dtos.User;
-using MakerspaceFablabPlatform.Excepitons;
+using MakerspaceFablabPlatform.Helpers;
 using MakerspaceFablabPlatform.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -30,7 +29,7 @@ public class UsersController : ControllerBase
     [HttpGet("me")]
     public async Task<ActionResult<UserResponse>> GetMe()
     {
-        var result = await _userService.GetByIdAsync(GetCurrentUserId());
+        var result = await _userService.GetByIdAsync(User.GetCurrentUserId());
         return Ok(result);
     }
 
@@ -46,7 +45,7 @@ public class UsersController : ControllerBase
     [HttpPut("{id:guid}")]
     public async Task<ActionResult<UserResponse>> Update(Guid id, UpdateRequest request)
     {
-        var result = await _userService.UpdateAsync(id, request, GetCurrentUserId());
+        var result = await _userService.UpdateAsync(id, request, User.GetCurrentUserId());
         return Ok(result);
     }
 
@@ -77,14 +76,7 @@ public class UsersController : ControllerBase
     [HttpPost("me/change-password")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
     {
-        await _userService.ChangePasswordAsync(GetCurrentUserId(), request);
+        await _userService.ChangePasswordAsync(User.GetCurrentUserId(), request);
         return NoContent();
-    }
-
-    private Guid GetCurrentUserId()
-    {
-        var value = User.FindFirstValue(ClaimTypes.NameIdentifier)
-            ?? throw new UnauthorizedException("Token'da kullanıcı kimliği bulunamadı.");
-        return Guid.Parse(value);
     }
 }

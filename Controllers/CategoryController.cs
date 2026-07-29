@@ -6,6 +6,7 @@ using MakerspaceFablabPlatform.Dtos.Category;
 using MakerspaceFablabPlatform.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
+using MakerspaceFablabPlatform.Helpers;
 
 namespace MakerspaceFablabPlatform.Controllers;
 
@@ -41,14 +42,14 @@ public class CategoryController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<List<Response>>> GetAll([FromQuery] bool includeUnactivated = false)
     {
-        var result = await _categoryService.GetAllAsync(includeUnactivated && IsAdmin());
+        var result = await _categoryService.GetAllAsync(includeUnactivated && User.IsAdmin());
         return Ok(result);
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<Response>> GetById(Guid id, [FromQuery] bool includeUnactivated = false)
     {
-        var result = await _categoryService.GetByIdAsync(id, includeUnactivated && IsAdmin());
+        var result = await _categoryService.GetByIdAsync(id, includeUnactivated && User.IsAdmin());
         return Ok(result);
     }
 
@@ -76,6 +77,4 @@ public class CategoryController : ControllerBase
         var result = await _categoryService.DeleteAsync(categoryId);
         return Ok(result);
     }
-
-    private bool IsAdmin() => User.IsInRole("Admin");
 }

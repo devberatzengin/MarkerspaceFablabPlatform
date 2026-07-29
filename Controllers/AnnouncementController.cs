@@ -1,8 +1,7 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using MakerspaceFablabPlatform.Dtos.Announcement;
 using MakerspaceFablabPlatform.Dtos.Common;
-using MakerspaceFablabPlatform.Excepitons;
+using MakerspaceFablabPlatform.Helpers;
 using MakerspaceFablabPlatform.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 
@@ -26,14 +25,14 @@ public class AnnouncementController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<PagedResponse<Response>>> GetAll([FromQuery] ListRequest request, CancellationToken cancellationToken = default)
     {
-        var result = await _announcementService.GetAllAsync(request, IsAdmin(), cancellationToken);
+        var result = await _announcementService.GetAllAsync(request, User.IsAdmin(), cancellationToken);
         return Ok(result);
     }
 
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<Response?>> GetById(Guid id)
     {
-        var result = await _announcementService.GetByIdAsync(id, IsAdmin());
+        var result = await _announcementService.GetByIdAsync(id, User.IsAdmin());
         return Ok(result);
     }
 
@@ -45,7 +44,7 @@ public class AnnouncementController : ControllerBase
     public async Task<ActionResult<Response>> Create(CreateRequest request)
     {
         
-        var reuslt = await _announcementService.CreateAsync(request, GetCurrentUserId());
+        var reuslt = await _announcementService.CreateAsync(request, User.GetCurrentUserId());
         return CreatedAtAction(
             nameof(GetById),
             new { id = reuslt.Id },
@@ -59,9 +58,7 @@ public class AnnouncementController : ControllerBase
     public async Task<ActionResult<Response?>> Update(Guid id,UpdateRequest request)
     {
         request.Id = id; // burda ne yaptım bilmiyorum bi an mantığıma yatmadı
-        bool isAdmin = User.Claims.Any(c => 
-            c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" && c.Value == "Admin");
-        var result = await _announcementService.UpdateAsync(request, GetCurrentUserId(), isAdmin);
+        var result = await _announcementService.UpdateAsync(request, User.GetCurrentUserId(), User.IsAdmin());
         return Ok(result);
     }
 
@@ -70,7 +67,7 @@ public class AnnouncementController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<ActionResult<Response?>> Publish(Guid id)
     {
-        var result = await _announcementService.PublishAsync(id, GetCurrentUserId());
+        var result = await _announcementService.PublishAsync(id, User.GetCurrentUserId());
         return Ok(result);
     }
 
@@ -79,7 +76,7 @@ public class AnnouncementController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<ActionResult<Response?>> Unpublish(Guid id)
     {
-        var result = await _announcementService.UnpublishAsync(id, GetCurrentUserId());
+        var result = await _announcementService.UnpublishAsync(id, User.GetCurrentUserId());
         return Ok(result);
     }
 
@@ -87,24 +84,9 @@ public class AnnouncementController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<ActionResult<bool>> Archive(Guid id)
     {
-        var result = await _announcementService.ArchiveAsync(id, GetCurrentUserId());
+        var result = await _announcementService.ArchiveAsync(id, User.GetCurrentUserId());
         return Ok(result);
     }
     
     
-    
-    private Guid GetCurrentUserId()
-    {
-        var value = User.FindFirstValue(ClaimTypes.NameIdentifier)
-                    ?? throw new UnauthorizedException("Token'da kullanıcı kimliği bulunamadı.");
-        return Guid.Parse(value);
-    }
-
-    private bool IsAdmin()
-    {
-        // Token içerisindeki uzun URI'ye sahip claim'i veya direkt ClaimTypes.Role'ü manuel ararız
-        return User.Claims.Any(c => 
-            (c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" || c.Type == System.Security.Claims.ClaimTypes.Role) 
-            && c.Value == "Admin");
-    }
 }

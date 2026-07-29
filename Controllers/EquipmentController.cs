@@ -1,9 +1,9 @@
-using System.Security.Claims;
 using MakerspaceFablabPlatform.Dtos.Common;
+using MakerspaceFablabPlatform.Helpers;
 using Response = MakerspaceFablabPlatform.Dtos.Equipment.Response;
 using MakerspaceFablabPlatform.Dtos.Equipment;
-using MakerspaceFablabPlatform.Excepitons;
 using MakerspaceFablabPlatform.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using EquipmentRentalResponse = MakerspaceFablabPlatform.Dtos.EquipmentRental.Response;
 
@@ -11,6 +11,7 @@ namespace MakerspaceFablabPlatform.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class EquipmentController : ControllerBase
 {
     
@@ -37,23 +38,26 @@ public class EquipmentController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<Response>> CreateAsync(CreateRequest request, CancellationToken token)
     {
-        var result =  await _equipmentService.CreateAsync(request, GetCurrentUserId(), token);
+        var result =  await _equipmentService.CreateAsync(request, User.GetCurrentUserId(), token);
         
         return Ok(result);
     }
 
     [HttpPut]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<Response>> UpdateAsync(UpdateRequest request, CancellationToken token)
     {
-        var result = await _equipmentService.UpdateAsync(request, GetCurrentUserId(), token);
+        var result = await _equipmentService.UpdateAsync(request, User.GetCurrentUserId(), token);
         
         return Ok(result);
         
     }
 
     [HttpDelete]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<Response>> DeleteAsync(Guid id, CancellationToken token)
     {
         var response = await _equipmentService.DeleteAsync(id, token);
@@ -64,25 +68,26 @@ public class EquipmentController : ControllerBase
     [HttpPatch("{id:guid}/rent")]
     public async Task<ActionResult<Response>> RentAsync(Guid id, TimeSpan span, CancellationToken token)
     {
-        var result = await _equipmentService.RentAsync(id, span, GetCurrentUserId(), token);
+        var result = await _equipmentService.RentAsync(id, span, User.GetCurrentUserId(), token);
         return Ok(result);
     }
 
     [HttpPatch("{id:guid}/reserve")]
     public async Task<ActionResult<Response>> ReserveAsync(Guid id, TimeSpan span, CancellationToken token)
     {
-        var result = await _equipmentService.ReserveAsync(id, span, GetCurrentUserId(), token);
+        var result = await _equipmentService.ReserveAsync(id, span, User.GetCurrentUserId(), token);
         return Ok(result);
     }
 
     [HttpPatch("{id:guid}/release")]
     public async Task<ActionResult<Response>> ReleaseItAsync(Guid id, CancellationToken token)
     {
-        var result = await _equipmentService.ReleaseItAsync(id, currentUserId:GetCurrentUserId(), token);
+        var result = await _equipmentService.ReleaseItAsync(id, currentUserId:User.GetCurrentUserId(), token);
         return Ok(result);
     }
 
     [HttpPatch("{id:guid}/maintenance")]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<Response>> SetMaintenanceAsync(Guid id, CancellationToken token)
     {
         var result = await _equipmentService.SetMaintenanceAsync(id, token);
@@ -95,17 +100,8 @@ public class EquipmentController : ControllerBase
         CancellationToken token,
         [FromQuery]bool includePast = false)
     {
-        var result = await _equipmentService.MyEquipmentsAsync(GetCurrentUserId(), request, includePast, token);
+        var result = await _equipmentService.MyEquipmentsAsync(User.GetCurrentUserId(), request, includePast, token);
         return Ok(result);
-    }
-
-
-
-    private Guid GetCurrentUserId()
-    {
-        var value = User.FindFirstValue(ClaimTypes.NameIdentifier)
-                    ?? throw new UnauthorizedException("Token'da kullanıcı kimliği bulunamadı.");
-        return Guid.Parse(value);
     }
 
     
