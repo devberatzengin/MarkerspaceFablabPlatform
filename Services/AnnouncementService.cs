@@ -170,7 +170,7 @@ public class AnnouncementService : IAnnouncementService
 
         // Admin değilse yalnızca kendi duyurusunu düzenleyebilir
         if (!isAdmin && announcement.CreatedByUserId != currentUserId)
-            throw new ForbiddenException("Bu duyuruyu düzenleme yetkiniz yok.");
+            throw new NotResourceOwnerException("Bu duyuruyu düzenleme yetkiniz yok.");
 
         var categoryExists = await _unitOfWork.Categories.ExistsAsync(c => c.Id == request.CategoryId);
         if (!categoryExists)

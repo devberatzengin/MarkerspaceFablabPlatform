@@ -42,7 +42,7 @@ public class AuthService : IAuthService
         bool emailExists = await _unitOfWork.Users.EmailExistsAsync(request.Email);
         
         if (emailExists)
-            throw new ConflictException("Email already exists");
+            throw new DuplicateEntityException("Email already exists");
 
         var user = new User()
         {
@@ -50,6 +50,7 @@ public class AuthService : IAuthService
             Email = request.Email,
             FirstName = request.FirstName,
             LastName = request.LastName,
+            PhoneNumber = request.PhoneNumber,
             Type = UserType.User,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
@@ -85,7 +86,7 @@ public class AuthService : IAuthService
         if (dbUser is null)
         {
             _logger.LogWarning("Login failed for {Email}: user not found", request.Email);
-            throw new UnauthorizedException("Email or Password incorrect");
+            throw new InvalidCredentialsException("Email or Password incorrect");
         }
 
         var result = _passwordHasher.VerifyHashedPassword(dbUser, dbUser.PasswordHash, request.Password);
@@ -93,13 +94,13 @@ public class AuthService : IAuthService
         if (result == PasswordVerificationResult.Failed)
         {
             _logger.LogWarning("Login failed for user {UserId}: wrong password", dbUser.Id);
-            throw new UnauthorizedException("Email or Password incorrect");
+            throw new InvalidCredentialsException("Email or Password incorrect");
         }
 
         if (!dbUser.IsActive || dbUser.IsDeleted)
         {
             _logger.LogWarning("Login blocked for user {UserId}: inactive or deleted", dbUser.Id);
-            throw new UnauthorizedException("Email or Password incorrect");
+            throw new InvalidCredentialsException("Email or Password incorrect");
         }
         
 

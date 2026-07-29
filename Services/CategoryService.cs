@@ -43,7 +43,7 @@ public class CategoryService : ICategoryService
         bool nameExist = await _unitOfWork.Categories.NameExistsAsync(createRequest.Name);
         
         if (nameExist)
-            throw new ConflictException($"'{createRequest.Name}' adında kategori zaten var.");
+            throw new DuplicateEntityException($"'{createRequest.Name}' adında kategori zaten var.");
         
         Category newCategory = new Category
         {
@@ -103,7 +103,7 @@ public class CategoryService : ICategoryService
         bool nameExist = await _unitOfWork.Categories.NameExistsAsync(updateRequest.Name, updateRequest.Id);
 
         if (nameExist)
-            throw new ConflictException($"'{updateRequest.Name}' adında kategori zaten var.");
+            throw new DuplicateEntityException($"'{updateRequest.Name}' adında kategori zaten var.");
 
         category.Name = updateRequest.Name;
         category.Type = updateRequest.Type;

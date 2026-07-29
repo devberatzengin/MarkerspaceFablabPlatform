@@ -53,7 +53,7 @@ public class UserService : IUserService
 
         if (id != currentUserId)
         {
-            throw new ForbiddenException("Sen Başka Birisini güncellemeye çalışıyorsun");
+            throw new NotResourceOwnerException("Sen Başka Birisini güncellemeye çalışıyorsun");
         }
         
         var validation = await _validator.ValidateAsync(request);
@@ -128,7 +128,7 @@ public class UserService : IUserService
 
         if (result == PasswordVerificationResult.Failed)
         {
-            throw new ConflictException("Mevcut şifre hatalı.");
+            throw new InvalidCurrentPasswordException();
         }
         
         dbUser.PasswordHash = _passwordHasher.HashPassword(dbUser, request.NewPassword);

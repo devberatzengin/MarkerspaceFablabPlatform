@@ -194,16 +194,16 @@ public class EquipmentService : IEquipmentService
             throw new NotFoundException(nameof(Equipment), id);
 
         if (equipment.Status != EquipmentStatus.Available) 
-            throw new ConflictException($"Equipment is not available");
+            throw new EquipmentNotAvailableException();
 
         if (equipment.PlacementType != EquipmentPlacementType.Portable)
-            throw new ConflictException($"Equipment is not portable");
+            throw new EquipmentNotPortableException();
 
         var currentUser = GetCurrentUser(currentUserId);
         
         if (currentUser.EquipmentLevel < equipment.RequiredUserLevel)
         {
-            throw new ValidationException($"{equipment.RequiredUserLevel} is required but you have {currentUser.EquipmentLevel} equipment level");
+            throw new InsufficientEquipmentLevelException($"Bu ekipman için gereken seviye: {equipment.RequiredUserLevel}, senin seviyen: {currentUser.EquipmentLevel}.");
         }
         
         var activeRental = await _unitOfWork.EquipmentRentals
@@ -215,7 +215,7 @@ public class EquipmentService : IEquipmentService
     
         if ( activerentcount > 
              _membershipStrategy.CalculateMaximumEquipmentCount()-1 )
-            throw new ValidationException($"{currentUserId} cannot rent any more. Alrredy have {activerentcount}");
+            throw new RentalLimitExceededException($"En fazla {_membershipStrategy.CalculateMaximumEquipmentCount()} aktif kiralamanız olabilir, şu an {activerentcount} tane var.");
     
         var rental = new EquipmentRental
         {
@@ -256,15 +256,15 @@ public class EquipmentService : IEquipmentService
             throw new NotFoundException(nameof(Equipment), id);
 
         if (equipment.Status != EquipmentStatus.Available)
-            throw new ConflictException($"Equipment is not available");
+            throw new EquipmentNotAvailableException();
 
         if (equipment.PlacementType != EquipmentPlacementType.Benchtop || equipment.PlacementType != EquipmentPlacementType.FloorStationary)
-            throw new ConflictException($"Equipment is not portable");
+            throw new EquipmentNotPortableException();
         
         var currentUser = GetCurrentUser(currentUserId);
         if (currentUser.EquipmentLevel < equipment.RequiredUserLevel)
         {
-            throw new ValidationException($"{equipment.RequiredUserLevel} is required but you have {currentUser.EquipmentLevel} equipment level");
+            throw new InsufficientEquipmentLevelException($"Bu ekipman için gereken seviye: {equipment.RequiredUserLevel}, senin seviyen: {currentUser.EquipmentLevel}.");
         }
 
         var activeRental = await _unitOfWork.EquipmentRentals
@@ -310,10 +310,10 @@ public class EquipmentService : IEquipmentService
         var activeRental = await _unitOfWork.EquipmentRentals.GetByEquipmentIdAsync(id, token);
         
         if (activeRental is null)
-            throw new ConflictException("This equipment is not currently rented");
+            throw new EquipmentNotRentedException();
 
         if (activeRental.UserId != currentUserId)
-            throw new ForbiddenException("This equipment is not rented by you");
+            throw new NotResourceOwnerException("Bu ekipman senin tarafından kiralanmamış.");
         
         var state = GetStateFor(equipment.Status);
         await state.AvailableAsync(equipment, _unitOfWork);
