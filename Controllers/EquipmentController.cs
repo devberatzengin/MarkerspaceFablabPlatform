@@ -1,9 +1,11 @@
 using System.Security.Claims;
 using MakerspaceFablabPlatform.Dtos.Common;
+using Response = MakerspaceFablabPlatform.Dtos.Equipment.Response;
 using MakerspaceFablabPlatform.Dtos.Equipment;
 using MakerspaceFablabPlatform.Excepitons;
 using MakerspaceFablabPlatform.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using EquipmentRentalResponse = MakerspaceFablabPlatform.Dtos.EquipmentRental.Response;
 
 namespace MakerspaceFablabPlatform.Controllers;
 
@@ -86,6 +88,17 @@ public class EquipmentController : ControllerBase
         var result = await _equipmentService.SetMaintenanceAsync(id, token);
         return Ok(result);
     }
+
+    [HttpGet("my-equipments")]
+    public async Task<ActionResult<PagedResponse<EquipmentRentalResponse>>> MyEquipmentsAsync(
+        [FromQuery] ListRequest request,
+        CancellationToken token,
+        [FromQuery]bool includePast = false)
+    {
+        var result = await _equipmentService.MyEquipmentsAsync(GetCurrentUserId(), request, includePast, token);
+        return Ok(result);
+    }
+
 
 
     private Guid GetCurrentUserId()

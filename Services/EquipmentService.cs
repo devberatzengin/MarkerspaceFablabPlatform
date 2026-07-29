@@ -4,6 +4,8 @@ using FluentValidation;
 using MakerspaceFablabPlatform.Data.Interfaces;
 using MakerspaceFablabPlatform.Dtos.Common;
 using MakerspaceFablabPlatform.Dtos.Equipment;
+using Response = MakerspaceFablabPlatform.Dtos.Equipment.Response;
+using EquipmentRentalResponse = MakerspaceFablabPlatform.Dtos.EquipmentRental.Response;
 using MakerspaceFablabPlatform.Entities;
 using MakerspaceFablabPlatform.Entities.Enums;
 using MakerspaceFablabPlatform.Excepitons;
@@ -19,21 +21,19 @@ public class EquipmentService : IEquipmentService
 {
     
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IEquipmentRepository _equipmentRepository;
     private readonly ILogger<EquipmentService> _logger;
     private readonly IMapper _mapper;
-    
+
     private readonly IValidator<CreateRequest> _createValidator;
     private readonly IValidator<UpdateRequest> _updateValidator;
-    
+
     private readonly IMembershipStrategy _membershipStrategy;
 
-    public EquipmentService(IMembershipStrategy strategy,IMapper mapper, IUnitOfWork unitOfWork, IEquipmentRepository equipmentRepository, ILogger<EquipmentService> logger, IValidator<CreateRequest> createValidator, IValidator<UpdateRequest> updateValidator)
+    public EquipmentService(IMembershipStrategy strategy, IMapper mapper, IUnitOfWork unitOfWork, ILogger<EquipmentService> logger, IValidator<CreateRequest> createValidator, IValidator<UpdateRequest> updateValidator)
     {
         _membershipStrategy = strategy;
         _mapper = mapper;
         _unitOfWork = unitOfWork;
-        _equipmentRepository = equipmentRepository;
         _logger = logger;
         _createValidator = createValidator;
         _updateValidator = updateValidator;
@@ -56,7 +56,7 @@ public class EquipmentService : IEquipmentService
         var page = Math.Max(1, request.Page);
         var pageSize = Math.Clamp(request.PageSize, 1, 100);
 
-        var query = _unitOfWork.Equipments.Query();
+        var query = _unitOfWork.Equipments.Query().Include("EquipmentRentals");
 
         if (request.Status is not null)
             query = query.Where(e => e.Status == request.Status);
@@ -197,13 +197,17 @@ public class EquipmentService : IEquipmentService
 
         if (equipment.PlacementType != EquipmentPlacementType.Portable)
             throw new ConflictException($"Equipment is not portable");
-
+        
+        var activeRental = await _unitOfWork.EquipmentRentals
+            .GetByEquipmentIdAsync(id, token); // Aktif olanı çek
+        
         var activerentcount = await _unitOfWork.EquipmentRentals.GetActiveRentalCountByUserAsync(currentUserId, token);
         
         _logger.LogWarning(_membershipStrategy.CalculateMaximumEquipmentCount().ToString() + " | "+ $"{activerentcount}");
     
-        if (activerentcount >= _membershipStrategy.CalculateMaximumEquipmentCount())
-            throw new ValidationException($"{currentUserId} cannot rent any more. Already have {activerentcount}");
+        if ( activerentcount-1 > 
+             _membershipStrategy.CalculateMaximumEquipmentCount() )
+            throw new ValidationException($"{currentUserId} cannot rent any more. Alrredy have {activerentcount}");
     
         var rental = new EquipmentRental
         {
@@ -238,22 +242,18 @@ public class EquipmentService : IEquipmentService
     public async Task<Response> ReserveAsync(Guid id, TimeSpan span, Guid currentUserId, CancellationToken token)
     {
         var equipment = await _unitOfWork.Equipments.GetByIdAsync(id, token);
-        
+
         if (equipment is null)
             throw new NotFoundException(nameof(Equipment), id);
-        
-        if (equipment.Status != EquipmentStatus.Available) 
+
+        if (equipment.Status != EquipmentStatus.Available)
             throw new ConflictException($"Equipment is not available");
 
-        if (equipment.PlacementType != EquipmentPlacementType.Benchtop ||equipment.PlacementType != EquipmentPlacementType.FloorStationary)
-            throw new ConflictException($"Equipment is portable, is have to be Benchtop or FloorStationary");
+        if (equipment.PlacementType != EquipmentPlacementType.Benchtop || equipment.PlacementType != EquipmentPlacementType.FloorStationary)
+            throw new ConflictException($"Equipment is not portable");
 
-        var activereservecount = await _unitOfWork.EquipmentRentals.GetActiveRentalCountByUserAsync(currentUserId, token);
-
-        _logger.LogWarning(_membershipStrategy.CalculateMaximumEquipmentCount().ToString() + " | "+ $"{activereservecount}");
-
-        if (activereservecount >= _membershipStrategy.CalculateMaximumEquipmentCount())
-            throw new ValidationException($"{currentUserId} cannot reserve any more. Already have {activereservecount}");
+        var activeRental = await _unitOfWork.EquipmentRentals
+            .GetActiveByEquipmentIdAsync(id, token); 
         
         var rental = new EquipmentRental
         {
@@ -266,9 +266,9 @@ public class EquipmentService : IEquipmentService
         await _unitOfWork.EquipmentRentals.AddAsync(rental);
         equipment.Status = EquipmentStatus.Reserved;
         _unitOfWork.Equipments.Update(equipment);
-        
+
         await _unitOfWork.SaveChangesAsync(token);
-        
+
         return new Response
         {
             Id = equipment.Id,
@@ -304,11 +304,14 @@ public class EquipmentService : IEquipmentService
         await state.AvailableAsync(equipment, _unitOfWork);
         
         activeRental.ReleasedAt = DateTime.UtcNow;
+        
+        _unitOfWork.Equipments.Update(equipment);
+        await _unitOfWork.Equipments.SaveChangesAsync(token);
         _unitOfWork.EquipmentRentals.Update(activeRental);
         await _unitOfWork.EquipmentRentals.SaveChangesAsync(token);
         
         _logger.LogInformation($"Released equipment {equipment.Id} by {currentUserId}");
-        
+            
         return _mapper.Map<Response>(equipment);
     }
 
@@ -333,6 +336,44 @@ public class EquipmentService : IEquipmentService
         await _unitOfWork.SaveChangesAsync(token);
 
         return _mapper.Map<Response>(result);
+    }
+
+    public async Task<PagedResponse<EquipmentRentalResponse>> MyEquipmentsAsync(
+        Guid userId, ListRequest request, bool includePast, CancellationToken token)
+    {
+        var page = Math.Max(1, request.Page);
+        var pageSize = Math.Clamp(request.PageSize, 1, 100);
+
+        var query = _unitOfWork.EquipmentRentals
+            .Query()
+            .Include("Equipment")
+            .Where(r => r.UserId == userId);
+
+        // ShowReleased false ise sadece aktif kiralıkları göster
+        if (!includePast)
+        {
+            query = query.Where(r => r.ReleasedAt == null);
+        }
+
+        var totalCount = await query.CountAsync(token);
+
+        var items = await query
+            .OrderByDescending(r => r.RentedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ProjectTo<EquipmentRentalResponse>(_mapper.ConfigurationProvider)
+            .ToListAsync(token);
+
+        _logger.LogInformation("Listed {Count}/{Total} rentals for user {UserId} (page {Page}, showReleased={ShowReleased})",
+            items.Count, totalCount, userId, page, includePast);
+
+        return new PagedResponse<EquipmentRentalResponse>
+        {
+            Items = items,
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = totalCount
+        };
     }
 
     private IEquipmentState GetStateFor(EquipmentStatus status)

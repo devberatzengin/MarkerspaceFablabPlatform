@@ -1,6 +1,11 @@
 using AutoMapper;
 using MakerspaceFablabPlatform.Dtos.Equipment;
+using MakerspaceFablabPlatform.Dtos.EquipmentRental;
 using MakerspaceFablabPlatform.Entities;
+using MakerspaceFablabPlatform.Entities.Enums;
+using Response = MakerspaceFablabPlatform.Dtos.Equipment.Response;
+using EquipmentRentalResponse = MakerspaceFablabPlatform.Dtos.EquipmentRental.Response;
+using EquipmentRentalEntity = MakerspaceFablabPlatform.Entities.EquipmentRental;
 
 namespace MakerspaceFablabPlatform.Profiles;
 
@@ -18,17 +23,19 @@ public class EquipmentProfile : Profile
                     src.EquipmentRentals
                         .Where(r => r.ReleasedAt == null)
                         .Select(r => (Guid?)r.UserId)
-                        .FirstOrDefault()));
+                        .FirstOrDefault()))
+            .ForMember(dest => dest.AvailableAt,
+                opt => opt.MapFrom(src =>
+                    src.EquipmentRentals
+                        .Where(r => r.ReleasedAt == null)
+                        .Select(r => (DateTime?)r.ExpectedReturnAt)
+                        .FirstOrDefault() ?? DateTime.UtcNow));
         
-        CreateMap<EquipmentRental, Response>()
-            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.EquipmentId))
-            .ForMember(dest => dest.CurrentUserId, opt => opt.MapFrom(src => src.UserId))
-            .ForMember(dest => dest.AvailableAt, opt => opt.MapFrom(src => src.ExpectedReturnAt))
-            .ForMember(dest => dest.Name, opt => opt.Ignore()) // Equipment'tan gelecek
-            .ForMember(dest => dest.Description, opt => opt.Ignore())
-            .ForMember(dest => dest.Type, opt => opt.Ignore())
-            .ForMember(dest => dest.PlacementType, opt => opt.Ignore())
-            .ForMember(dest => dest.Status, opt => opt.Ignore());
+        CreateMap<EquipmentRentalEntity, EquipmentRentalResponse>()
+            .ForMember(dest => dest.EquipmentName,
+                opt => opt.MapFrom(src => src.Equipment.Name))
+            .ForMember(dest => dest.EquipmentDescription,
+                opt => opt.MapFrom(src => src.Equipment.Description));
 
     }
 }
