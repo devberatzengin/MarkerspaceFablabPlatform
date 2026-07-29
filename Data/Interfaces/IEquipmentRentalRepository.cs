@@ -11,6 +11,6 @@ public interface IEquipmentRentalRepository : IRepository<EquipmentRental>
 
     Task<int> GetActiveRentalCountByUserAsync(Guid userId, CancellationToken cancellationToken = default);
     
-    Task<EquipmentRental> GetActiveByEquipmentIdAsync(Guid equipmentId, CancellationToken token);
+    Task<EquipmentRental?> GetActiveByEquipmentIdAsync(Guid equipmentId, CancellationToken token);
 
 }

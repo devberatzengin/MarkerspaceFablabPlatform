@@ -65,10 +65,10 @@ public class UserService : IUserService
         if (dbUser is null)
             throw new NotFoundException(nameof(User), id);
         
-        dbUser.FirstName = request.FirstName;
-        dbUser.LastName = request.LastName;
-        dbUser.PhoneNumber = request.PhoneNumber;
-        dbUser.Email = request.Email;
+        dbUser.FirstName = request.FirstName ?? dbUser.FirstName;
+        dbUser.LastName = request.LastName ?? dbUser.LastName;
+        dbUser.PhoneNumber = request.PhoneNumber ?? dbUser.PhoneNumber;
+        dbUser.Email = request.Email ?? dbUser.Email;
 
         _unitOfWork.Users.Update(dbUser);
         

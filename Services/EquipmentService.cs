@@ -119,7 +119,7 @@ public class EquipmentService : IEquipmentService
             UpdatedAt = DateTime.UtcNow,
         };
         
-         _unitOfWork.Equipments.AddAsync(newEquipment, token);
+        await _unitOfWork.Equipments.AddAsync(newEquipment, token);
         await _unitOfWork.SaveChangesAsync(token);
         
         return _mapper.Map<Response>(newEquipment);
