@@ -188,6 +188,7 @@ public class EquipmentService : IEquipmentService
     public async Task<Response> RentAsync(Guid id, TimeSpan span, Guid currentUserId, CancellationToken token)
 {
         var equipment = await _unitOfWork.Equipments.GetByIdAsync(id, token);
+    
 
         if (equipment is null)
             throw new NotFoundException(nameof(Equipment), id);
@@ -197,6 +198,13 @@ public class EquipmentService : IEquipmentService
 
         if (equipment.PlacementType != EquipmentPlacementType.Portable)
             throw new ConflictException($"Equipment is not portable");
+
+        var currentUser = GetCurrentUser(currentUserId);
+        
+        if (currentUser.EquipmentLevel < equipment.RequiredUserLevel)
+        {
+            throw new ValidationException($"{equipment.RequiredUserLevel} is required but you have {currentUser.EquipmentLevel} equipment level");
+        }
         
         var activeRental = await _unitOfWork.EquipmentRentals
             .GetByEquipmentIdAsync(id, token); // Aktif olanı çek
@@ -205,8 +213,8 @@ public class EquipmentService : IEquipmentService
         
         _logger.LogWarning(_membershipStrategy.CalculateMaximumEquipmentCount().ToString() + " | "+ $"{activerentcount}");
     
-        if ( activerentcount-1 > 
-             _membershipStrategy.CalculateMaximumEquipmentCount() )
+        if ( activerentcount > 
+             _membershipStrategy.CalculateMaximumEquipmentCount()-1 )
             throw new ValidationException($"{currentUserId} cannot rent any more. Alrredy have {activerentcount}");
     
         var rental = new EquipmentRental
@@ -241,6 +249,7 @@ public class EquipmentService : IEquipmentService
 
     public async Task<Response> ReserveAsync(Guid id, TimeSpan span, Guid currentUserId, CancellationToken token)
     {
+
         var equipment = await _unitOfWork.Equipments.GetByIdAsync(id, token);
 
         if (equipment is null)
@@ -251,6 +260,12 @@ public class EquipmentService : IEquipmentService
 
         if (equipment.PlacementType != EquipmentPlacementType.Benchtop || equipment.PlacementType != EquipmentPlacementType.FloorStationary)
             throw new ConflictException($"Equipment is not portable");
+        
+        var currentUser = GetCurrentUser(currentUserId);
+        if (currentUser.EquipmentLevel < equipment.RequiredUserLevel)
+        {
+            throw new ValidationException($"{equipment.RequiredUserLevel} is required but you have {currentUser.EquipmentLevel} equipment level");
+        }
 
         var activeRental = await _unitOfWork.EquipmentRentals
             .GetActiveByEquipmentIdAsync(id, token); 
@@ -387,5 +402,12 @@ public class EquipmentService : IEquipmentService
             _ => throw new InvalidOperationException($"Unknown content status {status}")
         };
     }
+
+    private User GetCurrentUser(Guid userId)
+    {
+        var result =  _unitOfWork.Users.Query().FirstOrDefault(u => u.Id == userId);
+        return result ?? throw new NotFoundException(nameof(User), userId);
+    }
+
 
 }

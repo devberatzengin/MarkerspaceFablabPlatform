@@ -36,6 +36,10 @@ public class User
     [MaxLength(20)]
     public string PhoneNumber { get; set; } = string.Empty;
     
+    [Required]
+    [Range(1,10,ErrorMessage = "Kullanıcı seviyesi 1 ile 10 arasında olmalıdır.")]
+    public short EquipmentLevel { get; set; } = 1;
+    
     
     public ICollection<Announcement> Announcements { get; set; } = new List<Announcement>();
     public ICollection<EquipmentRental> EquipmentRentals { get; set; } = new List<EquipmentRental>();
