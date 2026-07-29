@@ -43,6 +43,4 @@ public class Equipment
     [Required]
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     
-    [Required]
-    public DateTime AvailableAt  { get; set; } = DateTime.UtcNow;
 }
