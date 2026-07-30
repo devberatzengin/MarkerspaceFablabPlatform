@@ -188,8 +188,7 @@ public class EquipmentService : IEquipmentService
     public async Task<Response> RentAsync(Guid id, TimeSpan span, Guid currentUserId, CancellationToken token)
 {
         var equipment = await _unitOfWork.Equipments.GetByIdAsync(id, token);
-    
-
+        
         if (equipment is null)
             throw new NotFoundException(nameof(Equipment), id);
 
@@ -206,17 +205,14 @@ public class EquipmentService : IEquipmentService
             throw new InsufficientEquipmentLevelException($"Bu ekipman için gereken seviye: {equipment.RequiredUserLevel}, senin seviyen: {currentUser.EquipmentLevel}.");
         }
         
-        var activeRental = await _unitOfWork.EquipmentRentals
-            .GetByEquipmentIdAsync(id, token); // Aktif olanı çek
-        
         var activerentcount = await _unitOfWork.EquipmentRentals.GetActiveRentalCountByUserAsync(currentUserId, token);
         
-        _logger.LogWarning(_membershipStrategy.CalculateMaximumEquipmentCount().ToString() + " | "+ $"{activerentcount}");
-    
         if ( activerentcount > 
              _membershipStrategy.CalculateMaximumEquipmentCount()-1 )
             throw new RentalLimitExceededException($"En fazla {_membershipStrategy.CalculateMaximumEquipmentCount()} aktif kiralamanız olabilir, şu an {activerentcount} tane var.");
     
+        // ---- burda logic işlemler sonlanıyor artık ---- 
+        
         var rental = new EquipmentRental
         {
             UserId = currentUserId,
@@ -224,26 +220,11 @@ public class EquipmentService : IEquipmentService
             RentedAt = DateTime.UtcNow,
             ExpectedReturnAt = DateTime.UtcNow + span
         };
-
-        await _unitOfWork.EquipmentRentals.AddAsync(rental);
-        equipment.Status = EquipmentStatus.Rented;
-        _unitOfWork.Equipments.Update(equipment);
-
-        await _unitOfWork.SaveChangesAsync(token);
-
-        return new Response
-        {
-            Id = equipment.Id,
-            Name = equipment.Name,
-            Description = equipment.Description,
-            Type = equipment.Type,
-            PlacementType = equipment.PlacementType,
-            Status = EquipmentStatus.Rented, // Rental'dan sonra status bu
-            RequiredUserLevel = equipment.RequiredUserLevel,
-            IsDeleted = equipment.IsDeleted,
-            CurrentUserId = currentUserId,
-            AvailableAt = rental.ExpectedReturnAt
-        };
+        
+        var state = GetStateFor(equipment.Status);
+        await state.RentedAsync(equipment, rental, _unitOfWork);
+    
+        return _mapper.Map<Response>(equipment);
 
     }
 
@@ -262,13 +243,19 @@ public class EquipmentService : IEquipmentService
             throw new EquipmentNotPortableException();
         
         var currentUser = GetCurrentUser(currentUserId);
+        
         if (currentUser.EquipmentLevel < equipment.RequiredUserLevel)
         {
             throw new InsufficientEquipmentLevelException($"Bu ekipman için gereken seviye: {equipment.RequiredUserLevel}, senin seviyen: {currentUser.EquipmentLevel}.");
         }
-
-        var activeRental = await _unitOfWork.EquipmentRentals
-            .GetActiveByEquipmentIdAsync(id, token); 
+        
+        var activereservecount = await _unitOfWork.EquipmentRentals.GetActiveRentalCountByUserAsync(currentUserId, token);
+        
+        if ( activereservecount > 
+             _membershipStrategy.CalculateMaximumEquipmentCount()-1 )
+            throw new RentalLimitExceededException($"En fazla {_membershipStrategy.CalculateMaximumEquipmentCount()} aktif kiralamanız olabilir, şu an {activereservecount} tane var.");
+        
+        // -- logic işlemler bitti burada
         
         var rental = new EquipmentRental
         {
@@ -278,26 +265,10 @@ public class EquipmentService : IEquipmentService
             ExpectedReturnAt = DateTime.UtcNow + span
         };
 
-        await _unitOfWork.EquipmentRentals.AddAsync(rental);
-        equipment.Status = EquipmentStatus.Reserved;
-        _unitOfWork.Equipments.Update(equipment);
-
-        await _unitOfWork.SaveChangesAsync(token);
-
-        return new Response
-        {
-            Id = equipment.Id,
-            Name = equipment.Name,
-            Description = equipment.Description,
-            Type = equipment.Type,
-            PlacementType = equipment.PlacementType,
-            Status = EquipmentStatus.Reserved,
-            RequiredUserLevel = equipment.RequiredUserLevel,
-            IsDeleted = equipment.IsDeleted,
-            CurrentUserId = currentUserId,
-            AvailableAt = rental.ExpectedReturnAt
-        };
-
+        var state = GetStateFor(equipment.Status);
+        await state.ReservedAsync(equipment, rental, _unitOfWork);
+        
+        return _mapper.Map<Response>(equipment);
     }
     
     public async Task<Response> ReleaseItAsync(Guid id, Guid currentUserId, CancellationToken token)
@@ -307,23 +278,16 @@ public class EquipmentService : IEquipmentService
         if (equipment is null)
             throw new NotFoundException(nameof(Equipment), id);
         
-        var activeRental = await _unitOfWork.EquipmentRentals.GetByEquipmentIdAsync(id, token);
+        var activeRental = await _unitOfWork.EquipmentRentals.GetActiveByEquipmentIdAsync(id, token);
         
         if (activeRental is null)
             throw new EquipmentNotRentedException();
 
         if (activeRental.UserId != currentUserId)
-            throw new NotResourceOwnerException("Bu ekipman senin tarafından kiralanmamış.");
+            throw new NotResourceOwnerException($"Bu ekipman senin tarafından kiralanmamış.Ekipmanın =>{ activeRental.UserId}, Senin => {currentUserId} ");
         
         var state = GetStateFor(equipment.Status);
-        await state.AvailableAsync(equipment, _unitOfWork);
-        
-        activeRental.ReleasedAt = DateTime.UtcNow;
-        
-        _unitOfWork.Equipments.Update(equipment);
-        await _unitOfWork.Equipments.SaveChangesAsync(token);
-        _unitOfWork.EquipmentRentals.Update(activeRental);
-        await _unitOfWork.EquipmentRentals.SaveChangesAsync(token);
+        await state.AvailableAsync(equipment, activeRental, _unitOfWork);
         
         _logger.LogInformation($"Released equipment {equipment.Id} by {currentUserId}");
             
@@ -351,6 +315,23 @@ public class EquipmentService : IEquipmentService
         await _unitOfWork.SaveChangesAsync(token);
 
         return _mapper.Map<Response>(result);
+    }
+    
+    
+    public async Task<Response> UnsetMaintenanceAsync(Guid id, CancellationToken token)
+    {
+        var equipment = await _unitOfWork.Equipments.GetByIdAsync(id, token);
+
+        if (equipment is null)
+            throw new NotFoundException(nameof(Equipment), id);
+
+        equipment.Status = EquipmentStatus.Available;
+        equipment.UpdatedAt  = DateTime.UtcNow;
+        
+        _unitOfWork.Equipments.Update(equipment);
+        await _unitOfWork.SaveChangesAsync(token);
+
+        return _mapper.Map<Response>(equipment);
     }
 
     public async Task<PagedResponse<EquipmentRentalResponse>> MyEquipmentsAsync(

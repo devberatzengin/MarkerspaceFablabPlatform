@@ -19,6 +19,7 @@ public interface IEquipmentService
     
     Task<Response> ReleaseItAsync(Guid id, Guid currentUserId, CancellationToken token);
     Task<Response> SetMaintenanceAsync(Guid id, CancellationToken token);
+    Task<Response> UnsetMaintenanceAsync(Guid id, CancellationToken token);
     
     Task<PagedResponse<EquipmentRentalResponse>> MyEquipmentsAsync(Guid userId, ListRequest request,bool includePast, CancellationToken token);
 }

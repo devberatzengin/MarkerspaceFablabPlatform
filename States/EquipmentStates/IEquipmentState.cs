@@ -19,9 +19,9 @@ public interface IEquipmentState
     //Maintenance relaize ile saldım ama bir şey olmalı ki bu state'e düşmeli ama nasıl
     //basic bir bool kontrolümü yoksa acama belli bir count geçtikten sonra otomatik 2-5 saat aralığında bir bakım süresimi acaba ?_
     
-    Task AvailableAsync(Equipment equipment, IUnitOfWork unitOfWork);
-    Task ReservedAsync(Equipment equipment, IUnitOfWork unitOfWork);
-    Task RentedAsync(Equipment equipment, IUnitOfWork unitOfWork);
+    Task AvailableAsync(Equipment equipment, EquipmentRental rental,IUnitOfWork unitOfWork);
+    Task ReservedAsync(Equipment equipment,EquipmentRental rental, IUnitOfWork unitOfWork);
+    Task RentedAsync(Equipment equipment,EquipmentRental rental, IUnitOfWork unitOfWork);
     Task MaintenanceAsync(Equipment equipment, IUnitOfWork unitOfWork);
         
     

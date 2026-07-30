@@ -7,7 +7,7 @@ namespace MakerspaceFablabPlatform.States.EquipmentStates;
 
 public class MaintenanceState : IEquipmentState
 {
-    public async Task AvailableAsync(Equipment equipment, IUnitOfWork unitOfWork)
+    public async Task AvailableAsync(Equipment equipment,EquipmentRental rental, IUnitOfWork unitOfWork)
     {
         equipment.Status = EquipmentStatus.Available;
         equipment.UpdatedAt  = DateTime.UtcNow;
@@ -16,12 +16,12 @@ public class MaintenanceState : IEquipmentState
         await unitOfWork.Equipments.SaveChangesAsync();
     }
 
-    public Task ReservedAsync(Equipment equipment, IUnitOfWork unitOfWork)
+    public Task ReservedAsync(Equipment equipment, EquipmentRental rental, IUnitOfWork unitOfWork)
     {
         throw new ConflictException("The equipment have to be available before get reserved.");
     }
 
-    public Task RentedAsync(Equipment equipment, IUnitOfWork unitOfWork)
+    public Task RentedAsync(Equipment equipment,EquipmentRental rental, IUnitOfWork unitOfWork)
     {
         throw new ConflictException("The equipment have to be available before get rented.");
     }
