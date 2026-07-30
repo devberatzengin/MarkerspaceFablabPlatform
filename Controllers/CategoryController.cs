@@ -69,6 +69,14 @@ public class CategoryController : ControllerBase
         var result = await _categoryService.DeactivateAsync(id);
         return Ok(result);
     }
+    
+    [HttpPatch("{id}/activate")]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult<Response>> Activate(Guid id)
+    {
+        var result = await _categoryService.ActivateAsync(id);
+        return Ok(result);
+    }
 
     [HttpDelete]
     [Authorize(Roles = "Admin")]

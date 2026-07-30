@@ -136,6 +136,25 @@ public class CategoryService : ICategoryService
         return _mapper.Map<Response>(category);
 
     }
+    
+    public async Task<Response?> ActivateAsync(Guid categoryId)
+    {
+        var category = await _unitOfWork.Categories.GetByIdAsync(categoryId);
+        
+        if (category is null)
+            throw new NotFoundException(nameof(Category), categoryId);
+        
+        category.IsActive = true;
+        category.UpdatedAt = DateTime.UtcNow;
+
+        _unitOfWork.Categories.Update(category);
+        await _unitOfWork.Categories.SaveChangesAsync();
+
+        _logger.LogInformation("Deactivated category {CategoryId}", category.Id);
+
+        return _mapper.Map<Response>(category);
+
+    }
 
     public async Task<bool> DeleteAsync(Guid categoryId)
     {
