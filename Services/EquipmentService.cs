@@ -239,7 +239,7 @@ public class EquipmentService : IEquipmentService
         if (equipment.Status != EquipmentStatus.Available)
             throw new EquipmentNotAvailableException();
 
-        if (equipment.PlacementType != EquipmentPlacementType.Benchtop || equipment.PlacementType != EquipmentPlacementType.FloorStationary)
+        if (equipment.PlacementType != EquipmentPlacementType.Benchtop && equipment.PlacementType != EquipmentPlacementType.FloorStationary)
             throw new EquipmentNotPortableException();
         
         var currentUser = GetCurrentUser(currentUserId);
