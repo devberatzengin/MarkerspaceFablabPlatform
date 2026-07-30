@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MakerspaceFablabPlatform.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260727131929_MakeUsingByIdNullable3")]
-    partial class MakeUsingByIdNullable3
+    [Migration("20260730123908_FixTimestampTypes")]
+    partial class FixTimestampTypes
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -109,9 +109,6 @@ namespace MakerspaceFablabPlatform.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("AvailableAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -146,14 +143,169 @@ namespace MakerspaceFablabPlatform.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("UsingById")
+                    b.HasKey("Id");
+
+                    b.ToTable("Equipments");
+                });
+
+            modelBuilder.Entity("MakerspaceFablabPlatform.Entities.EquipmentRental", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("EquipmentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("ExpectedReturnAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsOverdue")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("IsPaid")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<TimeSpan?>("OverdueBy")
+                        .HasColumnType("interval");
+
+                    b.Property<DateTime?>("PaidAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("PaymentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("ReleasedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("RentedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UsingById");
+                    b.HasIndex("EquipmentId");
 
-                    b.ToTable("Equipments");
+                    b.HasIndex("ExpectedReturnAt");
+
+                    b.HasIndex("IsOverdue");
+
+                    b.HasIndex("IsPaid");
+
+                    b.HasIndex("PaymentId")
+                        .IsUnique();
+
+                    b.HasIndex("ReleasedAt");
+
+                    b.HasIndex("RentedAt");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId", "ReleasedAt");
+
+                    b.HasIndex("UserId", "RentedAt");
+
+                    b.ToTable("EquipmentRentals", (string)null);
+                });
+
+            modelBuilder.Entity("MakerspaceFablabPlatform.Entities.Payment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<double>("DiscountAmount")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(10, 2)
+                        .HasColumnType("double precision")
+                        .HasDefaultValue(0.0);
+
+                    b.Property<Guid>("EquipmentRentalId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<double>("LateFee")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(10, 2)
+                        .HasColumnType("double precision")
+                        .HasDefaultValue(0.0);
+
+                    b.Property<double>("PaidAmount")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(10, 2)
+                        .HasColumnType("double precision")
+                        .HasDefaultValue(0.0);
+
+                    b.Property<DateTime?>("PaidAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PaymentMethod")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("PaymentNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime?>("RefundedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<double>("RentalFee")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasDefaultValue("Pending");
+
+                    b.Property<double>("TotalAmount")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("double precision");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("EquipmentRentalId")
+                        .IsUnique();
+
+                    b.HasIndex("PaymentNumber")
+                        .IsUnique();
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("Status", "CreatedAt");
+
+                    b.HasIndex("Status", "PaidAt");
+
+                    b.HasIndex("UserId", "CreatedAt");
+
+                    b.HasIndex("UserId", "Status");
+
+                    b.ToTable("Payments");
                 });
 
             modelBuilder.Entity("MakerspaceFablabPlatform.Entities.User", b =>
@@ -168,6 +320,9 @@ namespace MakerspaceFablabPlatform.Migrations
                         .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
+
+                    b.Property<short>("EquipmentLevel")
+                        .HasColumnType("smallint");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
@@ -193,6 +348,10 @@ namespace MakerspaceFablabPlatform.Migrations
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("Type")
                         .IsRequired()
@@ -232,22 +391,61 @@ namespace MakerspaceFablabPlatform.Migrations
                     b.Navigation("CreatedBy");
                 });
 
-            modelBuilder.Entity("MakerspaceFablabPlatform.Entities.Equipment", b =>
+            modelBuilder.Entity("MakerspaceFablabPlatform.Entities.EquipmentRental", b =>
                 {
-                    b.HasOne("MakerspaceFablabPlatform.Entities.User", "UsingBy")
-                        .WithMany("Equipments")
-                        .HasForeignKey("UsingById")
+                    b.HasOne("MakerspaceFablabPlatform.Entities.Equipment", "Equipment")
+                        .WithMany("EquipmentRentals")
+                        .HasForeignKey("EquipmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MakerspaceFablabPlatform.Entities.User", "User")
+                        .WithMany("EquipmentRentals")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("UsingBy");
+                    b.Navigation("Equipment");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("MakerspaceFablabPlatform.Entities.Payment", b =>
+                {
+                    b.HasOne("MakerspaceFablabPlatform.Entities.EquipmentRental", "EquipmentRental")
+                        .WithOne("Payment")
+                        .HasForeignKey("MakerspaceFablabPlatform.Entities.Payment", "EquipmentRentalId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MakerspaceFablabPlatform.Entities.User", "User")
+                        .WithMany("Payments")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("EquipmentRental");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("MakerspaceFablabPlatform.Entities.Equipment", b =>
+                {
+                    b.Navigation("EquipmentRentals");
+                });
+
+            modelBuilder.Entity("MakerspaceFablabPlatform.Entities.EquipmentRental", b =>
+                {
+                    b.Navigation("Payment");
                 });
 
             modelBuilder.Entity("MakerspaceFablabPlatform.Entities.User", b =>
                 {
                     b.Navigation("Announcements");
 
-                    b.Navigation("Equipments");
+                    b.Navigation("EquipmentRentals");
+
+                    b.Navigation("Payments");
                 });
 #pragma warning restore 612, 618
         }

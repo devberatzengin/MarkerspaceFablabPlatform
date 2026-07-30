@@ -155,7 +155,7 @@ namespace MakerspaceFablabPlatform.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("ExpectedReturnAt")
-                        .HasColumnType("timestamp");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsOverdue")
                         .ValueGeneratedOnAdd()
@@ -171,17 +171,17 @@ namespace MakerspaceFablabPlatform.Migrations
                         .HasColumnType("interval");
 
                     b.Property<DateTime?>("PaidAt")
-                        .HasColumnType("timestamp");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid?>("PaymentId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime?>("ReleasedAt")
-                        .HasColumnType("timestamp");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("RentedAt")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
+                        .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<Guid>("UserId")
@@ -215,22 +215,20 @@ namespace MakerspaceFablabPlatform.Migrations
 
             modelBuilder.Entity("MakerspaceFablabPlatform.Entities.Payment", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                    b.Property<decimal>("DiscountAmount")
+                    b.Property<double>("DiscountAmount")
                         .ValueGeneratedOnAdd()
                         .HasPrecision(10, 2)
-                        .HasColumnType("numeric(10,2)")
-                        .HasDefaultValue(0m);
+                        .HasColumnType("double precision")
+                        .HasDefaultValue(0.0);
 
                     b.Property<Guid>("EquipmentRentalId")
                         .HasColumnType("uuid");
@@ -238,17 +236,17 @@ namespace MakerspaceFablabPlatform.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<decimal>("LateFee")
+                    b.Property<double>("LateFee")
                         .ValueGeneratedOnAdd()
                         .HasPrecision(10, 2)
-                        .HasColumnType("numeric(10,2)")
-                        .HasDefaultValue(0m);
+                        .HasColumnType("double precision")
+                        .HasDefaultValue(0.0);
 
-                    b.Property<decimal>("PaidAmount")
+                    b.Property<double>("PaidAmount")
                         .ValueGeneratedOnAdd()
                         .HasPrecision(10, 2)
-                        .HasColumnType("numeric(10,2)")
-                        .HasDefaultValue(0m);
+                        .HasColumnType("double precision")
+                        .HasDefaultValue(0.0);
 
                     b.Property<DateTime?>("PaidAt")
                         .HasColumnType("timestamp with time zone");
@@ -266,9 +264,9 @@ namespace MakerspaceFablabPlatform.Migrations
                     b.Property<DateTime?>("RefundedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<decimal>("RentalFee")
+                    b.Property<double>("RentalFee")
                         .HasPrecision(10, 2)
-                        .HasColumnType("numeric(10,2)");
+                        .HasColumnType("double precision");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -277,55 +275,34 @@ namespace MakerspaceFablabPlatform.Migrations
                         .HasColumnType("character varying(50)")
                         .HasDefaultValue("Pending");
 
-                    b.Property<decimal>("TotalAmount")
+                    b.Property<double>("TotalAmount")
                         .HasPrecision(10, 2)
-                        .HasColumnType("numeric(10,2)");
+                        .HasColumnType("double precision");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedAt")
-                        .HasDatabaseName("IX_Payments_CreatedAt");
+                    b.HasIndex("CreatedAt");
 
                     b.HasIndex("EquipmentRentalId")
-                        .IsUnique()
-                        .HasDatabaseName("IX_Payments_EquipmentRentalId");
+                        .IsUnique();
 
                     b.HasIndex("PaymentNumber")
-                        .IsUnique()
-                        .HasDatabaseName("IX_Payments_PaymentNumber_Unique");
+                        .IsUnique();
 
-                    b.HasIndex("Status")
-                        .HasDatabaseName("IX_Payments_Status");
+                    b.HasIndex("Status");
 
-                    b.HasIndex("Status", "CreatedAt")
-                        .HasDatabaseName("IX_Payments_StatusDate");
+                    b.HasIndex("Status", "CreatedAt");
 
-                    b.HasIndex("Status", "PaidAt")
-                        .HasDatabaseName("IX_Payments_StatusPaidAt");
+                    b.HasIndex("Status", "PaidAt");
 
-                    b.HasIndex("UserId", "CreatedAt")
-                        .HasDatabaseName("IX_Payments_UserDate");
+                    b.HasIndex("UserId", "CreatedAt");
 
-                    b.HasIndex("UserId", "Status")
-                        .HasDatabaseName("IX_Payments_UserStatus");
+                    b.HasIndex("UserId", "Status");
 
-                    b.ToTable("Payments", t =>
-                        {
-                            t.HasCheckConstraint("CK_LateFee_NonNegative", "\"LateFee\" >= 0");
-
-                            t.HasCheckConstraint("CK_PaidAmount_NonNegative", "\"PaidAmount\" >= 0");
-
-                            t.HasCheckConstraint("CK_PaidAtAfterCreated", "\"PaidAt\" IS NULL OR \"PaidAt\" >= \"CreatedAt\"");
-
-                            t.HasCheckConstraint("CK_RefundedAtAfterCreated", "\"RefundedAt\" IS NULL OR \"RefundedAt\" >= \"CreatedAt\"");
-
-                            t.HasCheckConstraint("CK_RentalFee_NonNegative", "\"RentalFee\" >= 0");
-
-                            t.HasCheckConstraint("CK_TotalAmount_NonNegative", "\"TotalAmount\" >= 0");
-                        });
+                    b.ToTable("Payments");
                 });
 
             modelBuilder.Entity("MakerspaceFablabPlatform.Entities.User", b =>
