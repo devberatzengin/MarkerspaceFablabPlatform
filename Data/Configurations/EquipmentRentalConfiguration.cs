@@ -29,18 +29,18 @@ public class EquipmentRentalConfiguration : IEntityTypeConfiguration<EquipmentRe
 
         builder
             .Property(er => er.RentedAt)
-            .HasColumnType("timestamp")
+            .HasColumnType("timestamp with time zone")
             .IsRequired()
             .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         builder
             .Property(er => er.ExpectedReturnAt)
-            .HasColumnType("timestamp")
+            .HasColumnType("timestamp with time zone")
             .IsRequired();
 
         builder
             .Property(er => er.ReleasedAt)
-            .HasColumnType("timestamp");
+            .HasColumnType("timestamp with time zone");
 
         builder
             .Property(er => er.PaymentId)
@@ -53,7 +53,7 @@ public class EquipmentRentalConfiguration : IEntityTypeConfiguration<EquipmentRe
 
         builder
             .Property(er => er.PaidAt)
-            .HasColumnType("timestamp");
+            .HasColumnType("timestamp with time zone");
 
         builder
             .Property(er => er.IsOverdue)
