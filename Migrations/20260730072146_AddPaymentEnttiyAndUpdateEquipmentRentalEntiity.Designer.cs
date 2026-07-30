@@ -3,6 +3,7 @@ using System;
 using MakerspaceFablabPlatform.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MakerspaceFablabPlatform.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260730072146_AddPaymentEnttiyAndUpdateEquipmentRentalEntiity")]
+    partial class AddPaymentEnttiyAndUpdateEquipmentRentalEntiity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -148,69 +151,45 @@ namespace MakerspaceFablabPlatform.Migrations
             modelBuilder.Entity("MakerspaceFablabPlatform.Entities.EquipmentRental", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("EquipmentId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("ExpectedReturnAt")
-                        .HasColumnType("timestamp");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsOverdue")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("IsPaid")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
+                        .HasColumnType("boolean");
 
                     b.Property<TimeSpan?>("OverdueBy")
                         .HasColumnType("interval");
 
                     b.Property<DateTime?>("PaidAt")
-                        .HasColumnType("timestamp");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid?>("PaymentId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime?>("ReleasedAt")
-                        .HasColumnType("timestamp");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("RentedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EquipmentId");
-
-                    b.HasIndex("ExpectedReturnAt");
-
-                    b.HasIndex("IsOverdue");
-
-                    b.HasIndex("IsPaid");
-
-                    b.HasIndex("PaymentId")
-                        .IsUnique();
-
-                    b.HasIndex("ReleasedAt");
-
-                    b.HasIndex("RentedAt");
-
                     b.HasIndex("UserId");
 
-                    b.HasIndex("UserId", "ReleasedAt");
+                    b.HasIndex("EquipmentId", "ReleasedAt");
 
-                    b.HasIndex("UserId", "RentedAt");
-
-                    b.ToTable("EquipmentRentals", (string)null);
+                    b.ToTable("EquipmentRentals");
                 });
 
             modelBuilder.Entity("MakerspaceFablabPlatform.Entities.Payment", b =>
@@ -222,110 +201,53 @@ namespace MakerspaceFablabPlatform.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<decimal>("DiscountAmount")
-                        .ValueGeneratedOnAdd()
-                        .HasPrecision(10, 2)
-                        .HasColumnType("numeric(10,2)")
-                        .HasDefaultValue(0m);
+                        .HasColumnType("numeric");
 
                     b.Property<Guid>("EquipmentRentalId")
                         .HasColumnType("uuid");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
                     b.Property<decimal>("LateFee")
-                        .ValueGeneratedOnAdd()
-                        .HasPrecision(10, 2)
-                        .HasColumnType("numeric(10,2)")
-                        .HasDefaultValue(0m);
+                        .HasColumnType("numeric");
 
                     b.Property<decimal>("PaidAmount")
-                        .ValueGeneratedOnAdd()
-                        .HasPrecision(10, 2)
-                        .HasColumnType("numeric(10,2)")
-                        .HasDefaultValue(0m);
+                        .HasColumnType("numeric");
 
                     b.Property<DateTime?>("PaidAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("PaymentMethod")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                    b.Property<int>("PaymentMethod")
+                        .HasColumnType("integer");
 
                     b.Property<string>("PaymentNumber")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                        .HasColumnType("text");
 
                     b.Property<DateTime?>("RefundedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<decimal>("RentalFee")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("numeric(10,2)");
+                        .HasColumnType("numeric");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasDefaultValue("Pending");
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
                     b.Property<decimal>("TotalAmount")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("numeric(10,2)");
+                        .HasColumnType("numeric");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedAt")
-                        .HasDatabaseName("IX_Payments_CreatedAt");
-
                     b.HasIndex("EquipmentRentalId")
-                        .IsUnique()
-                        .HasDatabaseName("IX_Payments_EquipmentRentalId");
+                        .IsUnique();
 
-                    b.HasIndex("PaymentNumber")
-                        .IsUnique()
-                        .HasDatabaseName("IX_Payments_PaymentNumber_Unique");
+                    b.HasIndex("UserId");
 
-                    b.HasIndex("Status")
-                        .HasDatabaseName("IX_Payments_Status");
-
-                    b.HasIndex("Status", "CreatedAt")
-                        .HasDatabaseName("IX_Payments_StatusDate");
-
-                    b.HasIndex("Status", "PaidAt")
-                        .HasDatabaseName("IX_Payments_StatusPaidAt");
-
-                    b.HasIndex("UserId", "CreatedAt")
-                        .HasDatabaseName("IX_Payments_UserDate");
-
-                    b.HasIndex("UserId", "Status")
-                        .HasDatabaseName("IX_Payments_UserStatus");
-
-                    b.ToTable("Payments", t =>
-                        {
-                            t.HasCheckConstraint("CK_LateFee_NonNegative", "\"LateFee\" >= 0");
-
-                            t.HasCheckConstraint("CK_PaidAmount_NonNegative", "\"PaidAmount\" >= 0");
-
-                            t.HasCheckConstraint("CK_PaidAtAfterCreated", "\"PaidAt\" IS NULL OR \"PaidAt\" >= \"CreatedAt\"");
-
-                            t.HasCheckConstraint("CK_RefundedAtAfterCreated", "\"RefundedAt\" IS NULL OR \"RefundedAt\" >= \"CreatedAt\"");
-
-                            t.HasCheckConstraint("CK_RentalFee_NonNegative", "\"RentalFee\" >= 0");
-
-                            t.HasCheckConstraint("CK_TotalAmount_NonNegative", "\"TotalAmount\" >= 0");
-                        });
+                    b.ToTable("Payment");
                 });
 
             modelBuilder.Entity("MakerspaceFablabPlatform.Entities.User", b =>
@@ -416,7 +338,7 @@ namespace MakerspaceFablabPlatform.Migrations
                     b.HasOne("MakerspaceFablabPlatform.Entities.Equipment", "Equipment")
                         .WithMany("EquipmentRentals")
                         .HasForeignKey("EquipmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("MakerspaceFablabPlatform.Entities.User", "User")
@@ -439,7 +361,7 @@ namespace MakerspaceFablabPlatform.Migrations
                         .IsRequired();
 
                     b.HasOne("MakerspaceFablabPlatform.Entities.User", "User")
-                        .WithMany("Payments")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -464,8 +386,6 @@ namespace MakerspaceFablabPlatform.Migrations
                     b.Navigation("Announcements");
 
                     b.Navigation("EquipmentRentals");
-
-                    b.Navigation("Payments");
                 });
 #pragma warning restore 612, 618
         }
