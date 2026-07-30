@@ -11,6 +11,7 @@ public interface IApplicationDbContext
     DbSet<User> Users { get; }
     DbSet<Equipment> Equipments { get; }
     DbSet<EquipmentRental> EquipmentRentals { get; }
+    DbSet<Payment> Payments { get; }
     
     DbSet<T> Set<T>() where T : class;  
     

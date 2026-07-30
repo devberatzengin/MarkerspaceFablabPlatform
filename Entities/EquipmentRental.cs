@@ -25,4 +25,14 @@ public class EquipmentRental
 
     [Required]
     public DateTime ExpectedReturnAt { get; set; }
+
+    public Guid? PaymentId { get; set; }
+    public Payment? Payment { get; set; }
+    
+    public bool IsPaid { get; set; } = false;
+    public DateTime? PaidAt { get; set; }
+    
+    public bool IsOverdue { get; set; } = false;
+    public TimeSpan? OverdueBy { get; set; }
+
 }

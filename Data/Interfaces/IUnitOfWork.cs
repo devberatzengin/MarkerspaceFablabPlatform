@@ -7,6 +7,7 @@ public interface IUnitOfWork : IAsyncDisposable
     IUserRepository Users { get; }
     IEquipmentRepository Equipments { get; }
     IEquipmentRentalRepository EquipmentRentals { get; }
+    IPaymentRepository Payments { get; }
     
     Task<int> SaveChangesAsync(CancellationToken ct = default);
     Task<int> SaveChangesAsync(Guid userId, CancellationToken ct = default);

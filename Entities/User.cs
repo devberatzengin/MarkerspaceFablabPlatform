@@ -43,6 +43,7 @@ public class User
     
     public ICollection<Announcement> Announcements { get; set; } = new List<Announcement>();
     public ICollection<EquipmentRental> EquipmentRentals { get; set; } = new List<EquipmentRental>();
+    public ICollection<Payment>? Payments { get; set; } =  new List<Payment>();
     
     public bool IsActive { get; set; } = true;
     public bool IsDeleted { get; set; } = false;

@@ -11,15 +11,18 @@ public class UnitOfWork : IUnitOfWork
     private readonly IUserRepository _userRepository;
     private readonly IEquipmentRepository _equipmentRepository;
     private readonly IEquipmentRentalRepository _equipmentRentalRepository;
+    private readonly IPaymentRepository _paymentRepository;
 
     public UnitOfWork(
         AppDbContext dbContext,
+        IPaymentRepository paymentRepository,
         IAnnouncementRepository announcementRepository,
         ICategoryRepository categoryRepository,
         IUserRepository userRepository,
         IEquipmentRepository equipmentRepository,
         IEquipmentRentalRepository equipmentRentalRepository)
     {
+        _paymentRepository = paymentRepository;
         _dbContext = dbContext;
         _announcementRepository = announcementRepository;
         _categoryRepository = categoryRepository;
@@ -33,6 +36,7 @@ public class UnitOfWork : IUnitOfWork
     public IUserRepository Users => _userRepository;
     public IEquipmentRepository Equipments => _equipmentRepository;
     public IEquipmentRentalRepository EquipmentRentals => _equipmentRentalRepository;
+    public IPaymentRepository Payments => _paymentRepository;
 
     public async Task<int> SaveChangesAsync(CancellationToken ct = default)
     {

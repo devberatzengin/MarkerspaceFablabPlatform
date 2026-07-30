@@ -17,6 +17,7 @@ public class AppDbContext : DbContext,  IApplicationDbContext
     public DbSet<User> Users { get; set; }
     public DbSet<Equipment> Equipments { get; set; }
     public DbSet<EquipmentRental> EquipmentRentals { get; set; }
+    public DbSet<Payment> Payments { get; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
