@@ -12,19 +12,22 @@ public class CreateRequest
     public Guid UserId { get; set; }
     
     [Required]
-    public decimal RentalFee { get; set; }
+    [Range(2, double.PositiveInfinity, ErrorMessage = "Amount must be greater than or equal to 2.")]
+    public double RentalFee { get; set; }
     
-    
-    public decimal LateFee { get; set; } = 0;
-    
-    [Required]
-    public decimal TotalAmount { get; set; }
-
-
-    public decimal DiscountAmount { get; set; } = 0;
+    [Range(2, double.PositiveInfinity, ErrorMessage = "Amount must be greater than or equal to 2.")]
+    public double LateFee { get; set; } = 0;
     
     [Required]
-    public decimal PaidAmount { get; set; }
+    [Range(2, double.PositiveInfinity, ErrorMessage = "Amount must be greater than or equal to 2.")]
+    public double TotalAmount { get; set; }
+
+    [Range(2, double.PositiveInfinity, ErrorMessage = "Amount must be greater than or equal to 2.")]
+    public double DiscountAmount { get; set; } = 0;
+    
+    [Required]
+    [Range(2, double.PositiveInfinity, ErrorMessage = "Amount must be greater than or equal to 2.")]
+    public double PaidAmount { get; set; }
 
     [Required] 
     public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.Other;

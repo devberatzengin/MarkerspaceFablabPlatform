@@ -7,7 +7,7 @@ public class Payment
 {
     [Key]
     [Required]
-    public Guid Id { get; set; }
+    public Guid Id { get; set; } =  Guid.NewGuid();
     [Required]
     public string PaymentNumber { get; set; } = string.Empty;
     
@@ -21,11 +21,11 @@ public class Payment
     public User User { get; set; }
     
     
-    public decimal RentalFee { get; set; } // Base rental fee
-    public decimal LateFee { get; set; }   // 0 if on-time, > 0 if late
-    public decimal TotalAmount { get; set; } // RentalFee + LateFee - Discount
-    public decimal DiscountAmount { get; set; } // Membership discount
-    public decimal PaidAmount { get; set; } // Actually paid
+    public double RentalFee { get; set; } // Base rental fee
+    public double LateFee { get; set; }   // 0 if on-time, > 0 if late
+    public double TotalAmount { get; set; } // RentalFee + LateFee - Discount
+    public double DiscountAmount { get; set; } // Membership discount
+    public double PaidAmount { get; set; } // Actually paid
 
     [Required] public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.Other;// Cash/Card/Transfer/Other
 

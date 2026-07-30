@@ -10,7 +10,7 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
     public void Configure(EntityTypeBuilder<Payment> builder)
     {
         builder.HasKey(p => p.Id);
-
+        
         builder.Property(p => p.PaymentNumber)
             .HasMaxLength(50)
             .IsRequired();
@@ -78,24 +78,6 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         builder.HasIndex(p => p.Status);
 
         builder.HasIndex(p => p.CreatedAt);
-
         
-        builder.HasCheckConstraint("CK_TotalAmount_NonNegative",
-            "\"TotalAmount\" >= 0");
-
-        builder.HasCheckConstraint("CK_RentalFee_NonNegative",
-            "\"RentalFee\" >= 0");
-
-        builder.HasCheckConstraint("CK_LateFee_NonNegative",
-            "\"LateFee\" >= 0");
-
-        builder.HasCheckConstraint("CK_PaidAmount_NonNegative",
-            "\"PaidAmount\" >= 0");
-
-        builder.HasCheckConstraint("CK_PaidAtAfterCreated",
-            "\"PaidAt\" IS NULL OR \"PaidAt\" >= \"CreatedAt\"");
-
-        builder.HasCheckConstraint("CK_RefundedAtAfterCreated",
-            "\"RefundedAt\" IS NULL OR \"RefundedAt\" >= \"CreatedAt\"");
     }
 }

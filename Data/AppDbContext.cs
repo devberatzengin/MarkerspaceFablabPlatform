@@ -1,3 +1,4 @@
+using MakerspaceFablabPlatform.Data.Configurations;
 using MakerspaceFablabPlatform.Data.Interfaces;
 using MakerspaceFablabPlatform.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +20,7 @@ public class AppDbContext : DbContext,  IApplicationDbContext
     public DbSet<EquipmentRental> EquipmentRentals { get; set; }
     public DbSet<Payment> Payments { get; }
 
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         
@@ -35,5 +37,6 @@ public class AppDbContext : DbContext,  IApplicationDbContext
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+        modelBuilder.ApplyConfiguration(new PaymentConfiguration());
     }
 }
