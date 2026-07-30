@@ -1,38 +1,46 @@
 using System.ComponentModel.DataAnnotations;
 using MakerspaceFablabPlatform.Entities.Enums;
 
-namespace MakerspaceFablabPlatform.Entities;
+namespace MakerspaceFablabPlatform.Dtos.Payment;
 
-public class Payment
+public class Response
 {
-    [Key]
     [Required]
     public Guid Id { get; set; }
+    
     [Required]
     public string PaymentNumber { get; set; } = string.Empty;
-    
-    
+
     [Required]
     public Guid EquipmentRentalId { get; set; }
-    public EquipmentRental EquipmentRental { get; set; }
     
     [Required]
     public Guid UserId { get; set; }
-    public User User { get; set; }
     
-    
+    [Required]
     public decimal RentalFee { get; set; } // Base rental fee
+    
+    [Required]
     public decimal LateFee { get; set; }   // 0 if on-time, > 0 if late
+    
+    [Required]
     public decimal TotalAmount { get; set; } // RentalFee + LateFee - Discount
+    
+    [Required]
     public decimal DiscountAmount { get; set; } // Membership discount
+    
+    [Required]
     public decimal PaidAmount { get; set; } // Actually paid
+    
+    [Required]
+    public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.Other;
 
-    [Required] public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.Other;// Cash/Card/Transfer/Other
+    [Required]
+    public PaymentStatus Status { get; set; }
 
-    [Required] public PaymentStatus Status { get; set; } = PaymentStatus.Pending;// Pending/Paid/Failed/Refunded
+    [Required]
     public DateTime CreatedAt { get; set; }
+    
+    [Required]
     public DateTime? PaidAt { get; set; }
-    public DateTime? RefundedAt { get; set; }
-    public bool IsDeleted { get; set; }
-
 }

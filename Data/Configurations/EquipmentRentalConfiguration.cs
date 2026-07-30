@@ -8,13 +8,10 @@ public class EquipmentRentalConfiguration : IEntityTypeConfiguration<EquipmentRe
 {
     public void Configure(EntityTypeBuilder<EquipmentRental> builder)
     {
-        // Table name
         builder.ToTable("EquipmentRentals");
 
-        // Primary key
         builder.HasKey(er => er.Id);
-
-        // Properties configuration
+        
         builder
             .Property(er => er.Id)
             .HasColumnType("uuid")
@@ -45,7 +42,6 @@ public class EquipmentRentalConfiguration : IEntityTypeConfiguration<EquipmentRe
             .Property(er => er.ReleasedAt)
             .HasColumnType("timestamp");
 
-        // NEW: Payment relationship
         builder
             .Property(er => er.PaymentId)
             .HasColumnType("uuid");
@@ -68,7 +64,6 @@ public class EquipmentRentalConfiguration : IEntityTypeConfiguration<EquipmentRe
             .Property(er => er.OverdueBy)
             .HasColumnType("interval");
 
-        // Foreign keys
         builder
             .HasOne(er => er.User)
             .WithMany(u => u.EquipmentRentals)
@@ -83,7 +78,6 @@ public class EquipmentRentalConfiguration : IEntityTypeConfiguration<EquipmentRe
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
 
-        // NEW: Payment relationship
         builder
             .HasOne(er => er.Payment)
             .WithOne(p => p.EquipmentRental)
@@ -103,6 +97,5 @@ public class EquipmentRentalConfiguration : IEntityTypeConfiguration<EquipmentRe
         builder.HasIndex(er => new { er.UserId, er.ReleasedAt }); // For active rentals query
         builder.HasIndex(er => new { er.UserId, er.RentedAt }); // For rental history query
 
-        // Constraints
     }
 }

@@ -11,7 +11,6 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
     {
         builder.HasKey(p => p.Id);
 
-        // ========== PROPERTIES ==========
         builder.Property(p => p.PaymentNumber)
             .HasMaxLength(50)
             .IsRequired();
@@ -51,55 +50,36 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         builder.Property(p => p.CreatedAt)
             .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-        // ========== RELATIONSHIPS ==========
-        // Equipment Rental -> Payment (one-to-one)
         builder.HasOne(p => p.EquipmentRental)
             .WithOne(er => er.Payment)
             .HasForeignKey<Payment>(p => p.EquipmentRentalId)
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
 
-        // User -> Payments (one-to-many)
         builder.HasOne(p => p.User)
             .WithMany(u => u.Payments)
             .HasForeignKey(p => p.UserId)
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
 
-        // ========== INDEXES - CRITICAL FOR PERFORMANCE ==========
+        builder.HasIndex(p => p.PaymentNumber).IsUnique();
+        
+        builder.HasIndex(p => new { p.UserId, p.Status });
 
-        // Unique payment number for reference
-        builder.HasIndex(p => p.PaymentNumber)
-            .IsUnique()
-            .HasName("IX_Payments_PaymentNumber_Unique");
+        builder.HasIndex(p => new { p.UserId, p.CreatedAt });
 
-        // User payment lookup
-        builder.HasIndex(p => new { p.UserId, p.Status })
-            .HasName("IX_Payments_UserStatus");
 
-        builder.HasIndex(p => new { p.UserId, p.CreatedAt })
-            .HasName("IX_Payments_UserDate");
+        builder.HasIndex(p => new { p.Status, p.CreatedAt });
 
-        // Revenue reporting indexes
-        builder.HasIndex(p => new { p.Status, p.CreatedAt })
-            .HasName("IX_Payments_StatusDate");
+        builder.HasIndex(p => p.EquipmentRentalId);
 
-        // Rental payment lookup
-        builder.HasIndex(p => p.EquipmentRentalId)
-            .HasName("IX_Payments_EquipmentRentalId");
+        builder.HasIndex(p => new { p.Status, p.PaidAt });
 
-        // Tracking sent payments
-        builder.HasIndex(p => new { p.Status, p.PaidAt })
-            .HasName("IX_Payments_StatusPaidAt");
+        builder.HasIndex(p => p.Status);
 
-        // Single column indexes for filtering
-        builder.HasIndex(p => p.Status)
-            .HasName("IX_Payments_Status");
+        builder.HasIndex(p => p.CreatedAt);
 
-        builder.HasIndex(p => p.CreatedAt)
-            .HasName("IX_Payments_CreatedAt");
-
-        // ========== CONSTRAINTS ==========
+        
         builder.HasCheckConstraint("CK_TotalAmount_NonNegative",
             "\"TotalAmount\" >= 0");
 
