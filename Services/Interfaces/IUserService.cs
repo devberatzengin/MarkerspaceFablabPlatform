@@ -11,4 +11,5 @@ public interface IUserService
     Task ActivateAsync(Guid id);
     Task DeleteAsync(Guid id);
     Task ChangePasswordAsync(Guid id, ChangePasswordRequest request);
+    Task<UserResponse> AddBalanceAsync (Guid userId, decimal balance); 
 }

@@ -139,5 +139,24 @@ public class UserService : IUserService
         _logger.LogInformation("Password changed {UserId}", dbUser.Id);
         
     }
+
+    public async Task<UserResponse> AddBalanceAsync(Guid userId, decimal balance)
+    {
+        var result = await _unitOfWork.Users.GetByIdAsync(userId);
+
+        if (result is null)
+        {
+            throw new NotFoundException(nameof(User), userId);
+        }
+
+        if (balance <= 0)
+            throw new ValidationException($"{balance}, cant be negative or zero");
+        
+        result.Balance += balance;
+        _unitOfWork.Users.Update(result);
+        await _unitOfWork.Users.SaveChangesAsync();
+        
+        return _mapper.Map<UserResponse>(result);
+    }
     
 }

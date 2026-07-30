@@ -40,6 +40,10 @@ public class User
     [Range(1,10,ErrorMessage = "Kullanıcı seviyesi 1 ile 10 arasında olmalıdır.")]
     public short EquipmentLevel { get; set; } = 1;
     
+    [Required]
+    [Range(0,double.MaxValue,ErrorMessage = "Lütfen geçerli bir bakiye giriniz.")]
+    public decimal Balance { get; set; } = 0;
+    
     
     public ICollection<Announcement> Announcements { get; set; } = new List<Announcement>();
     public ICollection<EquipmentRental> EquipmentRentals { get; set; } = new List<EquipmentRental>();

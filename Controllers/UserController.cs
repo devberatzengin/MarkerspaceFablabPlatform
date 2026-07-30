@@ -1,4 +1,5 @@
 using MakerspaceFablabPlatform.Dtos.User;
+using MakerspaceFablabPlatform.Entities;
 using MakerspaceFablabPlatform.Helpers;
 using MakerspaceFablabPlatform.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -79,4 +80,12 @@ public class UsersController : ControllerBase
         await _userService.ChangePasswordAsync(User.GetCurrentUserId(), request);
         return NoContent();
     }
+
+    [HttpPost("me/add-balance")]
+    public async Task<ActionResult<UserResponse>> AddBalance(decimal balance)
+    {
+        var result =  await _userService.AddBalanceAsync(User.GetCurrentUserId(), balance);
+        return Ok(result);
+    }
+
 }
