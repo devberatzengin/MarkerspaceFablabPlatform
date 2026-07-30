@@ -22,7 +22,7 @@ public class EquipmentController : ControllerBase
         _equipmentService = equipmentService;
     }
     
-    [HttpGet("/{id:guid}")]
+    [HttpGet("{id:guid}")]
     public async Task<ActionResult<Response?>> GetByIdAsync(Guid id, CancellationToken token)
     {
        var result = await _equipmentService.GetByIdAsync(id, token);
@@ -91,6 +91,14 @@ public class EquipmentController : ControllerBase
     public async Task<ActionResult<Response>> SetMaintenanceAsync(Guid id, CancellationToken token)
     {
         var result = await _equipmentService.SetMaintenanceAsync(id, token);
+        return Ok(result);
+    }
+    
+    [HttpPatch("{id:guid}/unmaintenance")]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult<Response>> UnsetMaintenanceAsync(Guid id, CancellationToken token)
+    {
+        var result = await _equipmentService.UnsetMaintenanceAsync(id, token);
         return Ok(result);
     }
 
