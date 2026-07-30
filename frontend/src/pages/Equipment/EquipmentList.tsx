@@ -309,22 +309,23 @@ export default function EquipmentList() {
               <p>Gerekli Seviye: {eq.requiredUserLevel}</p>
             </div>
             <div className="flex gap-2 flex-wrap" onClick={(e) => e.stopPropagation()}>
-              {eq.status === 'Available' && (
-                <>
-                  <button
-                    onClick={() => setRentModal({ id: eq.id, action: 'rent' })}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs"
-                  >
-                    Kirala
-                  </button>
+              {eq.status === 'Available' && eq.placementType === 'Portable' && (
+                <button
+                  onClick={() => setRentModal({ id: eq.id, action: 'rent' })}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs"
+                >
+                  Kirala
+                </button>
+              )}
+              {eq.status === 'Available' &&
+                (eq.placementType === 'Benchtop' || eq.placementType === 'FloorStationary') && (
                   <button
                     onClick={() => setRentModal({ id: eq.id, action: 'reserve' })}
                     className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-xs"
                   >
                     Rezerve Et
                   </button>
-                </>
-              )}
+                )}
               {(eq.status === 'Rented' || eq.status === 'Reserved') &&
                 eq.currentUserId === user?.id && (
                   <button

@@ -36,6 +36,7 @@ export interface UserResponse {
   phoneNumber: string;
   type: UserType;
   equipmentLevel: number;
+  balance: number;
   status: MembershipStatus;
   isActive: boolean;
   createdAt: string;

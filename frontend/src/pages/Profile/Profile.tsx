@@ -23,6 +23,8 @@ export default function Profile() {
     phoneNumber: user?.phoneNumber ?? '',
   });
   const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '' });
+  const [addingBalance, setAddingBalance] = useState(false);
+  const [balanceAmount, setBalanceAmount] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
@@ -51,6 +53,26 @@ export default function Profile() {
       setMessage('Şifre değiştirildi.');
     } catch (err: any) {
       setError(err.response?.data?.message || err.response?.data || 'Şifre değişikliği başarısız');
+    }
+  };
+
+  const handleAddBalance = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setMessage('');
+    const amount = Number(balanceAmount);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      setError('Geçerli bir tutar girin (0’dan büyük olmalı).');
+      return;
+    }
+    try {
+      await usersApi.addBalance(amount);
+      await refreshUser();
+      setAddingBalance(false);
+      setBalanceAmount('');
+      setMessage(`${amount.toFixed(2)} ₺ bakiye yüklendi.`);
+    } catch (err: any) {
+      setError(err.response?.data?.message || err.response?.data || 'Bakiye yükleme başarısız');
     }
   };
 
@@ -99,6 +121,10 @@ export default function Profile() {
                 <p className="text-xs text-gray-500">Ekipman Seviyesi</p>
                 <p className="font-medium text-gray-900">{user.equipmentLevel} / 10</p>
               </div>
+              <div>
+                <p className="text-xs text-gray-500">Bakiye</p>
+                <p className="font-semibold text-green-700">{(user.balance ?? 0).toFixed(2)} ₺</p>
+              </div>
             </div>
             <div className="flex gap-2 pt-4">
               <button onClick={() => setEditing(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm">
@@ -106,6 +132,9 @@ export default function Profile() {
               </button>
               <button onClick={() => setChangingPassword(true)} className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm">
                 Şifre Değiştir
+              </button>
+              <button onClick={() => setAddingBalance(true)} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
+                Bakiye Yükle
               </button>
             </div>
           </div>
@@ -153,6 +182,51 @@ export default function Profile() {
           </form>
         )}
       </div>
+
+      {/* Add Balance */}
+      {addingBalance && (
+        <div className="bg-white rounded-lg shadow p-6 mb-6">
+          <h2 className="font-semibold text-gray-900 mb-1">Bakiye Yükle</h2>
+          <p className="text-xs text-gray-500 mb-4">Mevcut bakiye: {(user.balance ?? 0).toFixed(2)} ₺</p>
+          <form onSubmit={handleAddBalance} className="space-y-3">
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Tutar (₺)</label>
+              <input
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={balanceAmount}
+                onChange={(e) => setBalanceAmount(e.target.value)}
+                required
+                placeholder="100.00"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              {[50, 100, 250, 500].map((amount) => (
+                <button
+                  key={amount}
+                  type="button"
+                  onClick={() => setBalanceAmount(String(amount))}
+                  className="border border-gray-300 hover:bg-gray-50 text-gray-700 px-3 py-1 rounded-md text-xs"
+                >
+                  +{amount} ₺
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <button type="submit" className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">Yükle</button>
+              <button
+                type="button"
+                onClick={() => { setAddingBalance(false); setBalanceAmount(''); }}
+                className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm"
+              >
+                İptal
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
       {/* Change Password */}
       {changingPassword && (

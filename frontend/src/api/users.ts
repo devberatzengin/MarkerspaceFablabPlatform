@@ -25,4 +25,7 @@ export const usersApi = {
 
   changePassword: (data: ChangePasswordRequest) =>
     api.post('/Users/me/change-password', data),
+
+  addBalance: (balance: number) =>
+    api.post<UserResponse>('/Users/me/add-balance', null, { params: { balance } }).then((r) => r.data),
 };
