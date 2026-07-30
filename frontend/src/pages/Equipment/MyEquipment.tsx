@@ -49,7 +49,8 @@ export default function MyEquipment() {
               <th className="text-left px-5 py-3 text-gray-500 font-medium">Ekipman</th>
               <th className="text-left px-5 py-3 text-gray-500 font-medium hidden md:table-cell">Açıklama</th>
               <th className="text-left px-5 py-3 text-gray-500 font-medium">Kiralama Tarihi</th>
-              <th className="text-left px-5 py-3 text-gray-500 font-medium hidden md:table-cell">İade Tarihi</th>
+              <th className="text-left px-5 py-3 text-gray-500 font-medium hidden md:table-cell">İade Edilmesi Gereken Tarih</th>
+              <th className="text-left px-5 py-3 text-gray-500 font-medium hidden md:table-cell">İade Edilen Tarih</th>
               <th className="text-left px-5 py-3 text-gray-500 font-medium">Durum</th>
               <th className="text-left px-5 py-3 text-gray-500 font-medium">İşlem</th>
             </tr>
@@ -60,10 +61,13 @@ export default function MyEquipment() {
                 <td className="px-5 py-3 font-medium text-gray-900">{r.equipmentName}</td>
                 <td className="px-5 py-3 text-gray-500 hidden md:table-cell">{r.equipmentDescription}</td>
                 <td className="px-5 py-3 text-gray-500">
-                  {new Date(r.rentedAt).toLocaleDateString('tr-TR')}
+                  {new Date(r.rentedAt).toLocaleString('tr-TR')}
                 </td>
                 <td className="px-5 py-3 text-gray-500 hidden md:table-cell">
-                  {new Date(r.expectedReturnAt).toLocaleDateString('tr-TR')}
+                  {new Date(r.expectedReturnAt).toLocaleString('tr-TR')}
+                </td>
+                <td className="px-5 py-3 text-gray-500 hidden md:table-cell">
+                  {r.releasedAt ? new Date(r.releasedAt).toLocaleString('tr-TR') : '—'}
                 </td>
                 <td className="px-5 py-3">
                   <span className={`text-xs px-2 py-1 rounded-full font-medium ${r.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
@@ -84,7 +88,7 @@ export default function MyEquipment() {
             ))}
             {data?.items.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-5 py-8 text-center text-gray-500">Kiralama kaydı bulunamadı.</td>
+                <td colSpan={7} className="px-5 py-8 text-center text-gray-500">Kiralama kaydı bulunamadı.</td>
               </tr>
             )}
           </tbody>

@@ -229,7 +229,7 @@ export default function AnnouncementList() {
                   </span>
                 </td>
                 <td className="px-5 py-3 text-gray-500 hidden md:table-cell">
-                  {new Date(a.createdAt).toLocaleDateString('tr-TR')}
+                  {new Date(a.createdAt).toLocaleString('tr-TR')}
                 </td>
                 <td className="px-5 py-3" onClick={(e) => e.stopPropagation()}>
                   <div className="flex gap-1 flex-wrap">

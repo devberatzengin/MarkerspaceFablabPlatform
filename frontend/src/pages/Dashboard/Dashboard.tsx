@@ -90,7 +90,7 @@ export default function Dashboard() {
                 <div key={a.id} className="px-5 py-3">
                   <h3 className="font-medium text-gray-900 text-sm">{a.title}</h3>
                   <p className="text-gray-500 text-xs mt-1">
-                    {a.createdByName} - {new Date(a.createdAt).toLocaleDateString('tr-TR')}
+                    {a.createdByName} - {new Date(a.createdAt).toLocaleString('tr-TR')}
                   </p>
                 </div>
               ))

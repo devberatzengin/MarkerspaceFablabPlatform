@@ -17,7 +17,7 @@ export default function Layout() {
   return (
     <div className="min-h-screen">
       <nav className="bg-gray-800">
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="max-w-[96rem] mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-4">
               <Link to="/" className="text-white font-bold text-lg">
@@ -79,7 +79,7 @@ export default function Layout() {
         </div>
       </div>
 
-      <main className="max-w-7xl mx-auto px-4 py-6">
+      <main className="max-w-[96rem] mx-auto px-4 py-6">
         <Outlet />
       </main>
     </div>
