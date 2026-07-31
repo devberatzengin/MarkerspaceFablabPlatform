@@ -29,8 +29,8 @@ export const paymentsApi = {
     api.get<PagedResponse<PendingPaymentResponse>>('/Payment/pending', { params }).then((r) => r.data),
 
   // Ödeme ekranındaki tutarı getirir, hiçbir şey kaydetmez
-  quote: (equipmentRentalId: string) =>
-    api.get<PendingPaymentResponse>(`/Payment/quote/${equipmentRentalId}`).then((r) => r.data),
+  preview: (equipmentRentalId: string) =>
+    api.get<PendingPaymentResponse>(`/Payment/preview/${equipmentRentalId}`).then((r) => r.data),
 
   getById: (id: string) =>
     api.get<PaymentResponse>(`/Payment/${id}`).then((r) => r.data),

@@ -11,7 +11,7 @@ interface PayModalProps {
 }
 
 export default function PayModal({ equipmentRentalId, onClose, onPaid }: PayModalProps) {
-  const [quote, setQuote] = useState<PendingPaymentResponse | null>(null);
+  const [preview, setPreview] = useState<PendingPaymentResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -21,9 +21,9 @@ export default function PayModal({ equipmentRentalId, onClose, onPaid }: PayModa
     let cancelled = false;
 
     paymentsApi
-      .quote(equipmentRentalId)
+      .preview(equipmentRentalId)
       .then((data) => {
-        if (!cancelled) setQuote(data);
+        if (!cancelled) setPreview(data);
       })
       .catch((err) => {
         if (!cancelled) setError(errorMessage(err, 'Tutar hesaplanamadı.'));
@@ -53,45 +53,45 @@ export default function PayModal({ equipmentRentalId, onClose, onPaid }: PayModa
     <DetailModal title="Ödeme" onClose={onClose}>
       {loading && <p className="text-sm text-gray-500 py-4">Tutar hesaplanıyor…</p>}
 
-      {!loading && !quote && (
+      {!loading && !preview && (
         <p className="text-sm text-red-600 py-4">{error ?? 'Tutar bilgisi alınamadı.'}</p>
       )}
 
-      {quote && (
+      {preview && (
         <>
-          <DetailRow label="Ekipman" value={quote.equipmentName} />
-          <DetailRow label="Kiralama" value={new Date(quote.rentedAt).toLocaleString('tr-TR')} />
-          <DetailRow label="İade" value={new Date(quote.releasedAt).toLocaleString('tr-TR')} />
+          <DetailRow label="Ekipman" value={preview.equipmentName} />
+          <DetailRow label="Kiralama" value={new Date(preview.rentedAt).toLocaleString('tr-TR')} />
+          <DetailRow label="İade" value={new Date(preview.releasedAt).toLocaleString('tr-TR')} />
 
           <div className="mt-4 pt-3 border-t">
-            <DetailRow label="Kiralama Ücreti" value={formatMoney(quote.rentalFee)} />
+            <DetailRow label="Kiralama Ücreti" value={formatMoney(preview.rentalFee)} />
             <DetailRow
               label="Gecikme Ücreti"
               value={
-                <span className={quote.lateFee > 0 ? 'text-red-600 font-medium' : undefined}>
-                  {formatMoney(quote.lateFee)}
+                <span className={preview.lateFee > 0 ? 'text-red-600 font-medium' : undefined}>
+                  {formatMoney(preview.lateFee)}
                 </span>
               }
             />
             <DetailRow
               label="Üyelik İndirimi"
-              value={<span className="text-green-700">- {formatMoney(quote.discountAmount)}</span>}
+              value={<span className="text-green-700">- {formatMoney(preview.discountAmount)}</span>}
             />
           </div>
 
           <div className="flex justify-between items-center mt-3 pt-3 border-t">
             <span className="text-sm font-medium text-gray-700">Ödenecek Tutar</span>
-            <span className="text-xl font-bold text-gray-900">{formatMoney(quote.totalAmount)}</span>
+            <span className="text-xl font-bold text-gray-900">{formatMoney(preview.totalAmount)}</span>
           </div>
 
           <div className="flex justify-between items-center mt-2 text-sm">
             <span className="text-gray-500">Bakiyeniz</span>
-            <span className={quote.hasSufficientBalance ? 'text-gray-700' : 'text-red-600 font-medium'}>
-              {formatMoney(quote.userBalance)}
+            <span className={preview.hasSufficientBalance ? 'text-gray-700' : 'text-red-600 font-medium'}>
+              {formatMoney(preview.userBalance)}
             </span>
           </div>
 
-          {!quote.hasSufficientBalance && (
+          {!preview.hasSufficientBalance && (
             <p className="mt-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded p-3">
               Bakiyeniz yetersiz. Profil sayfanızdan bakiye yükleyip tekrar deneyin.
             </p>
@@ -111,10 +111,10 @@ export default function PayModal({ equipmentRentalId, onClose, onPaid }: PayModa
             </button>
             <button
               onClick={handlePay}
-              disabled={submitting || !quote.hasSufficientBalance}
+              disabled={submitting || !preview.hasSufficientBalance}
               className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium disabled:opacity-50"
             >
-              {submitting ? 'İşleniyor…' : `${formatMoney(quote.totalAmount)} Öde`}
+              {submitting ? 'İşleniyor…' : `${formatMoney(preview.totalAmount)} Öde`}
             </button>
           </div>
         </>
