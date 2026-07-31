@@ -21,11 +21,10 @@ public class Payment
     public User User { get; set; }
     
     
-    public double RentalFee { get; set; } // Base rental fee
-    public double LateFee { get; set; }   // 0 if on-time, > 0 if late
-    public double TotalAmount { get; set; } // RentalFee + LateFee - Discount
-    public double DiscountAmount { get; set; } // Membership discount
-    public double PaidAmount { get; set; } // Actually paid
+    public decimal RentalFee { get; set; } // Base rental fee
+    public decimal LateFee { get; set; }   // 0 if on-time, > 0 if late
+    public decimal TotalAmount { get; set; } // RentalFee + LateFee - Discount
+    public decimal DiscountAmount { get; set; } // Membership discount
 
     [Required] public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.Other;// Cash/Card/Transfer/Other
 
