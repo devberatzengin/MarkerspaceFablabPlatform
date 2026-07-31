@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard/Dashboard';
 import AnnouncementList from './pages/Announcements/AnnouncementList';
 import EquipmentList from './pages/Equipment/EquipmentList';
 import MyEquipment from './pages/Equipment/MyEquipment';
+import PaymentList from './pages/Payments/PaymentList';
 import CategoryList from './pages/Categories/CategoryList';
 import UserList from './pages/Users/UserList';
 import Profile from './pages/Profile/Profile';
@@ -31,6 +32,7 @@ export default function App() {
             <Route path="/announcements" element={<AnnouncementList />} />
             <Route path="/equipment" element={<EquipmentList />} />
             <Route path="/my-equipment" element={<MyEquipment />} />
+            <Route path="/payments" element={<PaymentList />} />
             <Route
               path="/categories"
               element={

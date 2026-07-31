@@ -14,6 +14,11 @@ export default function Layout() {
   const isActive = (path: string) =>
     location.pathname.startsWith(path) ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white';
 
+  const isActiveAdmin = (path: string) =>
+    location.pathname.startsWith(path)
+      ? 'bg-amber-500 text-gray-900'
+      : 'text-amber-300 hover:bg-gray-700 hover:text-amber-200';
+
   return (
     <div className="min-h-screen">
       <nav className="bg-gray-800">
@@ -36,19 +41,23 @@ export default function Layout() {
                 <Link to="/my-equipment" className={`px-3 py-2 rounded-md text-sm font-medium ${isActive('/my-equipment')}`}>
                   Ekipmanlarım
                 </Link>
-                {isAdmin && (
-                  <>
-                    <Link to="/categories" className={`px-3 py-2 rounded-md text-sm font-medium ${isActive('/categories')}`}>
-                      Kategoriler
-                    </Link>
-                    <Link to="/users" className={`px-3 py-2 rounded-md text-sm font-medium ${isActive('/users')}`}>
-                      Kullanıcılar
-                    </Link>
-                  </>
-                )}
+                <Link to="/payments" className={`px-3 py-2 rounded-md text-sm font-medium ${isActive('/payments')}`}>
+                  Ödemelerim
+                </Link>
               </div>
             </div>
             <div className="flex items-center gap-3">
+              {isAdmin && (
+                <div className="hidden md:flex items-center gap-1 border-r border-gray-600 pr-3 mr-1">
+                  <span className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold mr-1">Yönetim</span>
+                  <Link to="/categories" className={`px-3 py-2 rounded-md text-sm font-medium ${isActiveAdmin('/categories')}`}>
+                    Kategoriler
+                  </Link>
+                  <Link to="/users" className={`px-3 py-2 rounded-md text-sm font-medium ${isActiveAdmin('/users')}`}>
+                    Kullanıcılar
+                  </Link>
+                </div>
+              )}
               <Link to="/profile" className="text-gray-300 hover:text-white text-sm">
                 {user?.firstName} {user?.lastName}
               </Link>
@@ -70,6 +79,7 @@ export default function Layout() {
           <Link to="/announcements" className={`px-3 py-1.5 rounded text-xs font-medium ${isActive('/announcements')}`}>Duyurular</Link>
           <Link to="/equipment" className={`px-3 py-1.5 rounded text-xs font-medium ${isActive('/equipment')}`}>Ekipmanlar</Link>
           <Link to="/my-equipment" className={`px-3 py-1.5 rounded text-xs font-medium ${isActive('/my-equipment')}`}>Ekipmanlarım</Link>
+          <Link to="/payments" className={`px-3 py-1.5 rounded text-xs font-medium ${isActive('/payments')}`}>Ödemelerim</Link>
           {isAdmin && (
             <>
               <Link to="/categories" className={`px-3 py-1.5 rounded text-xs font-medium ${isActive('/categories')}`}>Kategoriler</Link>

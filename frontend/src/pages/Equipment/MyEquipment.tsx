@@ -1,11 +1,16 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { equipmentApi } from '../../api/equipment';
+import DetailModal from '../../components/DetailModal';
 import type { EquipmentRentalResponse, PagedResponse } from '../../types';
 
 export default function MyEquipment() {
+  const navigate = useNavigate();
   const [data, setData] = useState<PagedResponse<EquipmentRentalResponse> | null>(null);
   const [page, setPage] = useState(1);
   const [includePast, setIncludePast] = useState(false);
+  // İade sonrası "şimdi mi ödeyeceksin" sorusu için teslim edilen kiralamanın id'si.
+  const [justReleasedRentalId, setJustReleasedRentalId] = useState<string | null>(null);
 
   const fetchData = async () => {
     try {
@@ -20,10 +25,11 @@ export default function MyEquipment() {
     fetchData();
   }, [page, includePast]);
 
-  const handleRelease = async (equipmentId: string) => {
+  const handleRelease = async (rental: EquipmentRentalResponse) => {
     try {
-      await equipmentApi.release(equipmentId);
-      fetchData();
+      await equipmentApi.release(rental.equipmentId);
+      await fetchData();
+      setJustReleasedRentalId(rental.id);
     } catch {}
   };
 
@@ -77,7 +83,7 @@ export default function MyEquipment() {
                 <td className="px-5 py-3">
                   {r.isActive && (
                     <button
-                      onClick={() => handleRelease(r.equipmentId)}
+                      onClick={() => handleRelease(r)}
                       className="text-blue-600 hover:underline text-xs"
                     >
                       İade Et
@@ -101,6 +107,33 @@ export default function MyEquipment() {
           <span className="px-3 py-1 text-sm text-gray-500">{page} / {data.totalPages}</span>
           <button onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))} disabled={page === data.totalPages} className="px-3 py-1 rounded border text-sm disabled:opacity-50">Sonraki</button>
         </div>
+      )}
+
+      {justReleasedRentalId && (
+        <DetailModal title="İade Tamamlandı" onClose={() => setJustReleasedRentalId(null)}>
+          <p className="text-sm text-gray-700">
+            Ekipman iade edildi. Ödemenizi şimdi yapmak ister misiniz?
+          </p>
+          <p className="text-sm text-gray-500 mt-2">
+            Sonra derseniz bu ödeme <span className="font-medium">Ödemelerim</span> sayfasında bekleyen
+            ödemeler arasında görünmeye devam eder.
+          </p>
+
+          <div className="flex justify-end gap-2 mt-5">
+            <button
+              onClick={() => setJustReleasedRentalId(null)}
+              className="px-4 py-2 rounded border text-sm text-gray-700 hover:bg-gray-50"
+            >
+              Sonra
+            </button>
+            <button
+              onClick={() => navigate(`/payments?pay=${justReleasedRentalId}`)}
+              className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
+            >
+              Şimdi Öde
+            </button>
+          </div>
+        </DetailModal>
       )}
     </div>
   );

@@ -5,6 +5,16 @@ export type EquipmentStatus = 'Unknown' | 'Available' | 'Reserved' | 'Rented' | 
 export type EquipmentPlacementType = 'Unknown' | 'Portable' | 'Benchtop' | 'FloorStationary';
 export type CategoryType = 'Undefined' | 'Draft' | 'Published' | 'Unpublished' | 'Archived';
 export type ContentStatus = 'Draft' | 'Published' | 'Unpublished' | 'Archived';
+export type PaymentStatus = 'Pending' | 'Paid' | 'Failed' | 'Refunded' | 'Cancelled';
+export type PaymentMethod =
+  | 'Balance'
+  | 'Cash'
+  | 'CreditCard'
+  | 'DebitCard'
+  | 'BankTransfer'
+  | 'Stripe'
+  | 'PayPal'
+  | 'Other';
 
 export interface AuthResponse {
   token: string;
@@ -139,6 +149,44 @@ export interface EquipmentRentalResponse {
   releasedAt?: string;
   expectedReturnAt: string;
   isActive: boolean;
+}
+
+export interface PaymentResponse {
+  id: string;
+  paymentNumber: string;
+  equipmentRentalId: string;
+  userId: string;
+  rentalFee: number;
+  lateFee: number;
+  totalAmount: number;
+  discountAmount: number;
+  paymentMethod: PaymentMethod;
+  status: PaymentStatus;
+  createdAt: string;
+  paidAt?: string;
+}
+
+/** Teslim edilmiş ama ödenmemiş bir kiralamanın tutar önizlemesi. */
+export interface PendingPaymentResponse {
+  equipmentRentalId: string;
+  equipmentId: string;
+  equipmentName: string;
+  rentedAt: string;
+  expectedReturnAt: string;
+  releasedAt: string;
+  isOverdue: boolean;
+  overdueBy?: string;
+  rentalFee: number;
+  lateFee: number;
+  discountAmount: number;
+  totalAmount: number;
+  userBalance: number;
+  hasSufficientBalance: boolean;
+}
+
+export interface PaymentCreateRequest {
+  equipmentRentalId: string;
+  userId?: string;
 }
 
 export interface PagedResponse<T> {
