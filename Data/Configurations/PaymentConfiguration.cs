@@ -58,6 +58,8 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
 
+        builder.HasQueryFilter(p =>  !p.IsDeleted);
+        
         builder.HasIndex(p => p.PaymentNumber).IsUnique();
         
         builder.HasIndex(p => new { p.UserId, p.Status });
