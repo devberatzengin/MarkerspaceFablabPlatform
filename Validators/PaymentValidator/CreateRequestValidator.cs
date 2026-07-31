@@ -13,16 +13,8 @@ public class CreateRequestValidator : AbstractValidator<CreateRequest>
             .NotNull();
         
         RuleFor(request => request.UserId)
-            .NotEmpty()
-            .NotNull();
-
-        RuleFor(request => request.RentalFee)
-            .NotEmpty()
-            .NotNull();
-        
-        RuleFor(request => request.PaymentMethod)
-            .NotEmpty()
-            .NotNull();
+            .NotEqual(Guid.Empty)
+            .When(request => request.UserId.HasValue);
         
     }
     

@@ -18,19 +18,16 @@ public class Response
     public Guid UserId { get; set; }
     
     [Required]
-    public decimal RentalFee { get; set; } // Base rental fee
+    public decimal RentalFee { get; set; }
     
     [Required]
-    public decimal LateFee { get; set; }   // 0 if on-time, > 0 if late
+    public decimal LateFee { get; set; }   // geçiktiysen üstüne fiyat farkı alıyoruz
     
     [Required]
     public decimal TotalAmount { get; set; } // RentalFee + LateFee - Discount
     
     [Required]
-    public decimal DiscountAmount { get; set; } // Membership discount
-    
-    [Required]
-    public decimal PaidAmount { get; set; } // Actually paid
+    public decimal DiscountAmount { get; set; } // Membership seviyene göre discount oluyor üyelere
     
     [Required]
     public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.Other;
