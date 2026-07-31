@@ -31,10 +31,6 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
             .HasPrecision(10, 2)
             .HasDefaultValue(0m);
 
-        builder.Property(p => p.PaidAmount)
-            .HasPrecision(10, 2)
-            .HasDefaultValue(0m);
-
         builder.Property(p => p.Status)
             .HasConversion<string>()
             .HasMaxLength(50)
