@@ -92,3 +92,9 @@ public class DuplicateEntityException : ConflictException
 {
     public DuplicateEntityException(string message) : base(message) { }
 }
+
+public class InsufficientBalanceException : ConflictException
+{
+    public InsufficientBalanceException(decimal required, decimal available)
+        : base($"Yetersiz bakiye. Gereken: {required:0.00} ₺, mevcut: {available:0.00} ₺.") { }
+}
