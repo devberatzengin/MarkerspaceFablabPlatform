@@ -1,15 +1,22 @@
+using MakerspaceFablabPlatform.Entities.Enums;
+
 namespace MakerspaceFablabPlatform.Strategies.MembershipStrategies;
 
 public class SilverMembershipStrategy : IMembershipStrategy
 {
-    public int CalculateMembershipCost()
+    public decimal CalculateMembershipCost()
     {
         return 50;
     }
 
-    public int CalculateReleaseOverTimeCost(TimeSpan releaseOverTime)
+    public decimal CalculateReleaseOverTimeCost(TimeSpan releaseOverTime)
     {
-        return (int)releaseOverTime.TotalDays * 50;
+        return (decimal)releaseOverTime.TotalHours * 50;
+    }
+    
+    public decimal CalculateDiscountAmount(decimal totalAmount)
+    {
+        return (decimal)totalAmount * 10 / 100;
     }
 
     public int CalculateMaximumEquipmentCount()

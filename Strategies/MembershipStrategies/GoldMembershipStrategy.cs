@@ -2,14 +2,19 @@ namespace MakerspaceFablabPlatform.Strategies.MembershipStrategies;
 
 public class GoldMembershipStrategy : IMembershipStrategy
 {
-    public int CalculateMembershipCost()
+    public decimal CalculateMembershipCost()
     {
         return 100;
     }
-
-    public int CalculateReleaseOverTimeCost(TimeSpan releaseOverTime)
+    
+    public decimal CalculateDiscountAmount(decimal totalAmount)
     {
-        return (int)releaseOverTime.TotalDays * 50;
+        return (decimal)((totalAmount * 20) / 100);
+    }
+
+    public decimal CalculateReleaseOverTimeCost(TimeSpan releaseOverTime)
+    {
+        return (decimal)releaseOverTime.TotalDays * 25;
     }
 
     public int CalculateMaximumEquipmentCount()

@@ -1,8 +1,16 @@
+using MakerspaceFablabPlatform.Entities.Enums;
+
 namespace MakerspaceFablabPlatform.Strategies.MembershipStrategies;
 
 public interface IMembershipStrategy
 {
-    int CalculateMembershipCost();
-    int CalculateReleaseOverTimeCost(TimeSpan releaseOverTime);
+    decimal CalculateMembershipCost();
+    
+    decimal CalculateReleaseOverTimeCost(TimeSpan releaseOverTime); // Late'i Hesapladı
+    
+    
+    decimal CalculateDiscountAmount(decimal totalAmountWithoutDiscount);
+    
     int CalculateMaximumEquipmentCount();
+    
 }
