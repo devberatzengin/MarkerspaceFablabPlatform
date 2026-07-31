@@ -30,4 +30,8 @@
       <Content Include="Dtos\.DS_Store" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Policies\PaymentPolicies\" />
+    </ItemGroup>
+
 </Project>

@@ -87,6 +87,7 @@ public class Program
         builder.Services.AddScoped<ICategoryService, CategoryService>();
         builder.Services.AddScoped<IAnnouncementService, AnnouncementService>();
         builder.Services.AddScoped<IEquipmentService, EquipmentService>();
+        builder.Services.AddScoped<IPaymentService, PaymentService>();
 
         //builder.Services.AddScoped<IEventService, EventService>();
         builder.Services.AddScoped<TokenService>();
@@ -128,31 +129,28 @@ public class Program
 
         //Strategy
         builder.Services.AddHttpContextAccessor();
+        builder.Services.AddSingleton<IMembershipStrategyFactory, MembershipStrategyFactory>();
+
+        // Token sahibinin stratejisi. Başka bir kullanıcı adına işlem yapan
+        // servisler bunu değil, IMembershipStrategyFactory'yi kullanmalı.
         builder.Services.AddScoped<IMembershipStrategy>(provider =>
         {
             var httpContext = provider.GetRequiredService<IHttpContextAccessor>();
             var userRepository = provider.GetRequiredService<IUserRepository>();
-    
+            var factory = provider.GetRequiredService<IMembershipStrategyFactory>();
+
             // Token'dan user ID al
             var userId = httpContext.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-    
+
             if (userId != null && Guid.TryParse(userId, out var guidId))
             {
                 // Database'den çek (Sync - .Result kullan)
                 var user = userRepository.GetByIdAsync(guidId).Result;
-        
-                return user?.Status switch
-                {
-                    MembershipStatus.Free => new FreeMembershipStrategy(),
-                    MembershipStatus.Bronze => new BronzeMembershipStrategy(),
-                    MembershipStatus.Silver => new SilverMembershipStrategy(),
-                    MembershipStatus.Gold => new GoldMembershipStrategy(),
-                    MembershipStatus.Professional => new ProfessionalMembershipStrategy(),
-                    _ => new FreeMembershipStrategy()
-                };
+
+                return factory.Create(user?.Status ?? MembershipStatus.Unknown);
             }
-    
-            return new FreeMembershipStrategy();
+
+            return factory.Create(MembershipStatus.Unknown);
         });
 
         
