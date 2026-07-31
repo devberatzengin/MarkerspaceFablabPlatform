@@ -265,7 +265,6 @@ public class PaymentService : IPaymentService
     public async Task<PendingResponse> GetPreviewAsync(Guid equipmentRentalId, Guid currentUserId, bool isAdmin, CancellationToken token = default)
     {
         var rental = await _unitOfWork.EquipmentRentals.Query()
-            .Include(r => r.Equipment)
             .FirstOrDefaultAsync(r => r.Id == equipmentRentalId, token);
 
         if (rental is null)
