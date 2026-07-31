@@ -38,6 +38,6 @@ public class AvailableState : IEquipmentState
         equipment.UpdatedAt  = DateTime.UtcNow;
         
         unitOfWork.Equipments.Update(equipment);
-        await unitOfWork.Equipments.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
     }
 }

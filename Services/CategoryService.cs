@@ -5,7 +5,6 @@ using MakerspaceFablabPlatform.Entities;
 using MakerspaceFablabPlatform.Excepitons;
 using MakerspaceFablabPlatform.Services.Interfaces;
 using FluentValidation;
-using Microsoft.EntityFrameworkCore;
 using ValidationException = MakerspaceFablabPlatform.Excepitons.ValidationException;
 
 
@@ -15,7 +14,7 @@ public class CategoryService : ICategoryService
 {
     
     private readonly IUnitOfWork _unitOfWork;
-    private readonly ICategoryRepository _categoryRepository;
+    private readonly ICategoryRepository _categoryRepository; // Eskiden kulalnıyorduk artık UoW'e geçtik biliyorum. Ama kalsın eskiden kullandığımı gösteriyor. 
     private readonly ILogger<CategoryService> _logger;
     private readonly IMapper _mapper;
     private readonly IValidator<CreateRequest> _createValidator;
@@ -57,7 +56,7 @@ public class CategoryService : ICategoryService
         };
         
         await _unitOfWork.Categories.AddAsync(newCategory);
-        await _unitOfWork.Categories.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync();
         
         _logger.LogInformation("Created category {CategoryId} with name {Name}", newCategory.Id, newCategory.Name);
 
@@ -75,7 +74,7 @@ public class CategoryService : ICategoryService
         return _mapper.Map<List<Response>>(categories);
     }
 
-    public async Task<Response?> GetByIdAsync(Guid categoryId, bool includeUnactivated = false)
+    public async Task<Response> GetByIdAsync(Guid categoryId, bool includeUnactivated = false)
     {
         var category = await _unitOfWork.Categories.GetByIdAsync(categoryId);
 
@@ -88,7 +87,7 @@ public class CategoryService : ICategoryService
         return _mapper.Map<Response>(category);
     }
 
-    public async Task<Response?> UpdateAsync(UpdateRequest updateRequest)
+    public async Task<Response> UpdateAsync(UpdateRequest updateRequest)
     {
         var validation = await _updateValidator.ValidateAsync(updateRequest);
         
@@ -111,14 +110,14 @@ public class CategoryService : ICategoryService
         category.UpdatedAt = DateTime.UtcNow;
 
         _unitOfWork.Categories.Update(category);
-        await _unitOfWork.Categories.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync();
 
         _logger.LogInformation("Updated category {CategoryId}", category.Id);
 
         return _mapper.Map<Response>(category);
     }
 
-    public async Task<Response?> DeactivateAsync(Guid categoryId)
+    public async Task<Response> DeactivateAsync(Guid categoryId)
     {
         var category = await _unitOfWork.Categories.GetByIdAsync(categoryId);
         
@@ -129,7 +128,7 @@ public class CategoryService : ICategoryService
         category.UpdatedAt = DateTime.UtcNow;
 
         _unitOfWork.Categories.Update(category);
-        await _unitOfWork.Categories.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync();
 
         _logger.LogInformation("Deactivated category {CategoryId}", category.Id);
 
@@ -137,7 +136,7 @@ public class CategoryService : ICategoryService
 
     }
     
-    public async Task<Response?> ActivateAsync(Guid categoryId)
+    public async Task<Response> ActivateAsync(Guid categoryId)
     {
         var category = await _unitOfWork.Categories.GetByIdAsync(categoryId);
         
@@ -148,7 +147,7 @@ public class CategoryService : ICategoryService
         category.UpdatedAt = DateTime.UtcNow;
 
         _unitOfWork.Categories.Update(category);
-        await _unitOfWork.Categories.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync();
 
         _logger.LogInformation("Deactivated category {CategoryId}", category.Id);
 
@@ -167,7 +166,7 @@ public class CategoryService : ICategoryService
         category.UpdatedAt = DateTime.UtcNow;
         
         _unitOfWork.Categories.Update(category);
-        await _unitOfWork.Categories.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync();
 
         _logger.LogInformation("Deleted category {CategoryId}", category.Id);
 

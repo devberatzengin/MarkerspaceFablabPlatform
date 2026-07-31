@@ -15,5 +15,5 @@ public class UserResponse
     public decimal Balance { get; set; } = -1; // HATA OLDUĞUNU ANLARIZ
     public MembershipStatus Status { get; set; } = MembershipStatus.Unknown;
     public bool IsActive { get; set; } = true;
-    public DateTime CreatedAt  { get; set; } = DateTime.Now;
+    public DateTime CreatedAt  { get; set; } = DateTime.UtcNow;
 }

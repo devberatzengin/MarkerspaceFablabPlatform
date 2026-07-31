@@ -11,6 +11,7 @@ public class CachedCategoryRepository : ICategoryRepository
     private readonly ICategoryRepository _inner;
     private readonly IMemoryCache _cache;
     private readonly ILogger<CachedCategoryRepository> _logger;
+    private readonly IUnitOfWork _unitOfWork;
 
     private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(5);
     private const string AllCategoryKey = "category:all";
@@ -37,8 +38,9 @@ public class CachedCategoryRepository : ICategoryRepository
         previousToken.Dispose();
     }
 
-    public CachedCategoryRepository(ICategoryRepository inner, IMemoryCache cache, ILogger<CachedCategoryRepository> logger)
+    public CachedCategoryRepository(IUnitOfWork unitOfWork,ICategoryRepository inner, IMemoryCache cache, ILogger<CachedCategoryRepository> logger)
     {
+        _unitOfWork = unitOfWork;
         _inner = inner;
         _cache = cache;
         _logger = logger;
@@ -109,7 +111,7 @@ public class CachedCategoryRepository : ICategoryRepository
 
     public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        return _inner.SaveChangesAsync(cancellationToken);
+        return _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
     public Task<bool> NameExistsAsync(string name, Guid? excludeId = null, CancellationToken cancellationToken = default)

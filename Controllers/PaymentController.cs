@@ -14,9 +14,12 @@ namespace MakerspaceFablabPlatform.Controllers;
 public class PaymentController : ControllerBase
 {
     private readonly IPaymentService _paymentService;
-
-    public PaymentController(IPaymentService paymentService)
+    private readonly ICurrentUserService _currentUserService;
+        
+    
+    public PaymentController(ICurrentUserService currentUserService,IPaymentService paymentService)
     {
+        _currentUserService = currentUserService;
         _paymentService = paymentService;
     }
 
@@ -31,15 +34,15 @@ public class PaymentController : ControllerBase
     [HttpGet("my-payments")]
     public async Task<ActionResult<PagedResponse<Response>>> MyPaymentsAsync([FromQuery] ListRequest request, CancellationToken token)
     {
-        var result = await _paymentService.GetAllByUserIdAsync(User.GetCurrentUserId(), request, token);
-        return Ok(result);
+        var result = await _paymentService.GetAllByUserIdAsync(_currentUserService.GetCurrentUserId(), request, token);
+        return Ok(result); 
     }
 
     // Ödenmemiş kiralamalar, hesaplanmış tutarlarıyla birlikte.
     [HttpGet("pending")]
     public async Task<ActionResult<PagedResponse<PendingResponse>>> PendingAsync([FromQuery] ListRequest request, CancellationToken token)
     {
-        var result = await _paymentService.GetPendingAsync(User.GetCurrentUserId(), request, token);
+        var result = await _paymentService.GetPendingAsync(_currentUserService.GetCurrentUserId(), request, token);
         return Ok(result);
     }
 
@@ -48,7 +51,7 @@ public class PaymentController : ControllerBase
     public async Task<ActionResult<PendingResponse>> PreviewAsync(Guid equipmentRentalId, CancellationToken token)
     {
         var result = await _paymentService.GetPreviewAsync(
-            equipmentRentalId, User.GetCurrentUserId(), User.IsAdmin(), token);
+            equipmentRentalId, _currentUserService.GetCurrentUserId(), _currentUserService.IsAdmin(), token);
 
         return Ok(result);
     }
@@ -67,7 +70,7 @@ public class PaymentController : ControllerBase
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<Response>> GetByIdAsync(Guid id, CancellationToken token)
     {
-        var result = await _paymentService.GetByIdAsync(id, User.GetCurrentUserId(), User.IsAdmin(), token);
+        var result = await _paymentService.GetByIdAsync(id, _currentUserService.GetCurrentUserId(), _currentUserService.IsAdmin(), token);
         return Ok(result);
     }
 
@@ -75,8 +78,7 @@ public class PaymentController : ControllerBase
     public async Task<ActionResult<Response>> CreateAsync(CreateRequest request, CancellationToken token)
     {
         var result = await _paymentService.CreateAsync(
-            request, User.GetCurrentUserId(), User.IsAdmin(), token);
-
+            request, _currentUserService.GetCurrentUserId(), _currentUserService.IsAdmin(), token);
         return Ok(result);
     }
 }

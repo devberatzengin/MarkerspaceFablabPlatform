@@ -7,9 +7,9 @@ namespace MakerspaceFablabPlatform.Data;
 
 public static class SeedData
 {
-    public static async Task EnsureAdminAsync(IUserRepository userRepository, IPasswordHasher<User> hasher, IConfiguration config)
+    public static async Task EnsureAdminAsync(IUnitOfWork unitOfWork, IPasswordHasher<User> hasher, IConfiguration config)
     {
-        if (await userRepository.AnyAdminExistsAsync())
+        if (await unitOfWork.Users.AnyAdminExistsAsync())
             return;
 
         var email = config["SeedAdmin:Email"] ?? "admin@example.com";
@@ -29,7 +29,7 @@ public static class SeedData
         };
         admin.PasswordHash = hasher.HashPassword(admin, password);
 
-        await userRepository.AddAsync(admin);
-        await userRepository.SaveChangesAsync();
+        await unitOfWork.Users.AddAsync(admin);
+        await unitOfWork.SaveChangesAsync();
     }
 }

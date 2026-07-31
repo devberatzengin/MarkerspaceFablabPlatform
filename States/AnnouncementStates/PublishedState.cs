@@ -15,18 +15,18 @@ public class PublishedState : IAnnouncementState
     public async Task UnpublishAsync(Announcement announcement, IUnitOfWork unitOfWork)
     {
         announcement.Status = ContentStatus.Unpublished;
-        announcement.UpdatedAt  = DateTime.Now;
+        announcement.UpdatedAt  = DateTime.UtcNow;
         
         unitOfWork.Announcements.Update(announcement);
-        await unitOfWork.Announcements.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
     }
 
     public async Task ArchiveAsync(Announcement announcement, IUnitOfWork unitOfWork)
     {
         announcement.Status = ContentStatus.Archived;
-        announcement.UpdatedAt  = DateTime.Now;
+        announcement.UpdatedAt  = DateTime.UtcNow;
         
         unitOfWork.Announcements.Update(announcement);
-        await unitOfWork.Announcements.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
     }
 }

@@ -13,7 +13,7 @@ using MakerspaceFablabPlatform.Services.Interfaces;
 using MakerspaceFablabPlatform.States.EquipmentStates;
 using MakerspaceFablabPlatform.Strategies.MembershipStrategies;
 using Microsoft.EntityFrameworkCore;
-using ValidationException = FluentValidation.ValidationException;
+using ValidationException = MakerspaceFablabPlatform.Excepitons.ValidationException;
 
 namespace MakerspaceFablabPlatform.Services;
 
@@ -40,7 +40,7 @@ public class EquipmentService : IEquipmentService
     }
     
     
-    public async Task<Response?> GetByIdAsync(Guid id, CancellationToken token)
+    public async Task<Response> GetByIdAsync(Guid id, CancellationToken token)
     {
         var result = await _unitOfWork.Equipments.GetByIdAsync(id, token);
      
@@ -100,7 +100,7 @@ public class EquipmentService : IEquipmentService
         var validation = await _createValidator.ValidateAsync(request, token);
         
         if (!validation.IsValid)
-            throw new ValidationException(validation.Errors);
+            throw new ValidationException(validation.ToDictionary());
 
         Equipment newEquipment = new Equipment()
         {
@@ -130,7 +130,7 @@ public class EquipmentService : IEquipmentService
         var validation = _updateValidator.Validate(request);
 
         if (!validation.IsValid)
-            throw new ValidationException(validation.Errors);
+            throw new ValidationException(validation.ToDictionary());
 
         var dbEquipment = _unitOfWork.Equipments.Query().FirstOrDefault(x => x.Id == request.Id);
 
@@ -162,7 +162,7 @@ public class EquipmentService : IEquipmentService
         dbEquipment.UpdatedAt = DateTime.UtcNow;
 
         _unitOfWork.Equipments.Update(dbEquipment);
-        await _unitOfWork.Equipments.SaveChangesAsync(token);
+        await _unitOfWork.SaveChangesAsync(token);
 
         return _mapper.Map<Response>(dbEquipment);
     }
@@ -179,7 +179,7 @@ public class EquipmentService : IEquipmentService
         
         _unitOfWork.Equipments.Update(result);
         
-        await _unitOfWork.Equipments.SaveChangesAsync(token);
+        await _unitOfWork.SaveChangesAsync(token);
         
         return _mapper.Map<Response>(result);
         
@@ -307,8 +307,10 @@ public class EquipmentService : IEquipmentService
         var activeRental = await _unitOfWork.EquipmentRentals.GetActiveRentalAsync(id, token);
 
         if (activeRental is not null)
+        {
             activeRental.ReleasedAt = DateTime.UtcNow;
-
+            _unitOfWork.EquipmentRentals.Update(activeRental);
+        }
         result.UpdatedAt = DateTime.UtcNow;
 
         _unitOfWork.Equipments.Update(result);

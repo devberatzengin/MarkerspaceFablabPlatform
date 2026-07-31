@@ -8,7 +8,7 @@ namespace MakerspaceFablabPlatform.Services.Interfaces;
 
 public interface IEquipmentService
 {
-    Task<Response?> GetByIdAsync(Guid id, CancellationToken token);
+    Task<Response> GetByIdAsync(Guid id, CancellationToken token);
     Task<PagedResponse<Response>> GetAllAsync(ListRequest request, CancellationToken token);
     Task<Response> CreateAsync(CreateRequest request, Guid currentUserId ,CancellationToken token);
     Task<Response> UpdateAsync(UpdateRequest request, Guid currentUserId, CancellationToken token);

@@ -13,7 +13,7 @@ public class MaintenanceState : IEquipmentState
         equipment.UpdatedAt  = DateTime.UtcNow;
         
         unitOfWork.Equipments.Update(equipment);
-        await unitOfWork.Equipments.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
     }
 
     public Task ReservedAsync(Equipment equipment, EquipmentRental rental, IUnitOfWork unitOfWork)

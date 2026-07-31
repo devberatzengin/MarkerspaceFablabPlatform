@@ -74,7 +74,12 @@ public class Program
             var logger = sp.GetRequiredService<ILogger<CachedCategoryRepository>>();
             return new CachedCategoryRepository(inner, cache, logger);
         });
+        
         //builder.Services.AddScoped<IEventRepository, EventRepository>();
+        builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+        builder.Services.AddScoped<ITokenService, TokenService>();
+        
+        
         builder.Services.AddScoped<IUserRepository, UserRepository>();
         builder.Services.AddScoped<IEquipmentRepository, EquipmentRepository>();
         builder.Services.AddScoped<IEquipmentRentalRepository, EquipmentRentalRepository>();

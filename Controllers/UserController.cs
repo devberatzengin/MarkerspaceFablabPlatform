@@ -13,9 +13,11 @@ namespace MakerspaceFablabPlatform.Controllers;
 public class UsersController : ControllerBase
 {
     private readonly IUserService _userService;
+    private readonly ICurrentUserService _currentUserService;
 
-    public UsersController(IUserService userService)
+    public UsersController(ICurrentUserService currentUserService,IUserService userService)
     {
+        _currentUserService = currentUserService;
         _userService = userService;
     }
 
@@ -30,7 +32,7 @@ public class UsersController : ControllerBase
     [HttpGet("me")]
     public async Task<ActionResult<UserResponse>> GetMe()
     {
-        var result = await _userService.GetByIdAsync(User.GetCurrentUserId());
+        var result = await _userService.GetByIdAsync(_currentUserService.GetCurrentUserId());
         return Ok(result);
     }
 
@@ -46,7 +48,7 @@ public class UsersController : ControllerBase
     [HttpPut("{id:guid}")]
     public async Task<ActionResult<UserResponse>> Update(Guid id, UpdateRequest request)
     {
-        var result = await _userService.UpdateAsync(id, request, User.GetCurrentUserId());
+        var result = await _userService.UpdateAsync(id, request, _currentUserService.GetCurrentUserId());
         return Ok(result);
     }
 
@@ -77,14 +79,14 @@ public class UsersController : ControllerBase
     [HttpPost("me/change-password")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
     {
-        await _userService.ChangePasswordAsync(User.GetCurrentUserId(), request);
+        await _userService.ChangePasswordAsync(_currentUserService.GetCurrentUserId(), request);
         return NoContent();
     }
 
     [HttpPost("me/add-balance")]
     public async Task<ActionResult<UserResponse>> AddBalance(decimal balance)
     {
-        var result =  await _userService.AddBalanceAsync(User.GetCurrentUserId(), balance);
+        var result =  await _userService.AddBalanceAsync(_currentUserService.GetCurrentUserId(), balance);
         return Ok(result);
     }
 

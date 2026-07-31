@@ -141,7 +141,7 @@ public class AnnouncementService : IAnnouncementService
         };
         
         await _unitOfWork.Announcements.AddAsync(newAnnouncement);
-        await _unitOfWork.Announcements.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync();
             
         _logger.LogInformation("Created announcement {AnnouncementId} with title {Title} by user {UserId}", newAnnouncement.Id, title, currentUserId);
         
@@ -154,7 +154,7 @@ public class AnnouncementService : IAnnouncementService
 
 
 
-    public async Task<Response?> UpdateAsync(UpdateRequest request, Guid currentUserId, bool isAdmin)
+    public async Task<Response> UpdateAsync(UpdateRequest request, Guid currentUserId, bool isAdmin)
     {
         var validation = await _updateValidator.ValidateAsync(request);
 
@@ -186,14 +186,14 @@ public class AnnouncementService : IAnnouncementService
         announcement.UpdatedAt = DateTime.UtcNow;
 
         _unitOfWork.Announcements.Update(announcement);
-        await _unitOfWork.Announcements.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync();
 
         _logger.LogInformation("Updated announcement {AnnouncementId} with title {Title} by user {UserId}", announcement.Id, title, currentUserId);
 
         return _mapper.Map<Response>(announcement);
     }
 
-    public async Task<Response?> PublishAsync(Guid announcementId, Guid currentUserId)
+    public async Task<Response> PublishAsync(Guid announcementId, Guid currentUserId)
     {
         var announcement = await _unitOfWork.Announcements.GetByIdWithDetailsAsync(announcementId, asNoTracking: false);
 
@@ -208,7 +208,7 @@ public class AnnouncementService : IAnnouncementService
         return _mapper.Map<Response>(announcement);
     }
 
-    public async Task<Response?> UnpublishAsync(Guid announcementId, Guid currentUserId)
+    public async Task<Response> UnpublishAsync(Guid announcementId, Guid currentUserId)
     {
         var announcement = await _unitOfWork.Announcements.GetByIdWithDetailsAsync(announcementId, asNoTracking: false);
 

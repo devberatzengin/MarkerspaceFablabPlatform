@@ -13,9 +13,11 @@ namespace MakerspaceFablabPlatform.Controllers;
 public class AnnouncementController : ControllerBase
 {
     private readonly IAnnouncementService _announcementService;
+    private readonly ICurrentUserService _currentUserService;
 
-    public AnnouncementController(IAnnouncementService announcementService)
+    public AnnouncementController(ICurrentUserService currentUserService,IAnnouncementService announcementService)
     {
+        _currentUserService = currentUserService;
         _announcementService = announcementService;
     }
     
@@ -25,14 +27,14 @@ public class AnnouncementController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<PagedResponse<Response>>> GetAll([FromQuery] ListRequest request, CancellationToken cancellationToken = default)
     {
-        var result = await _announcementService.GetAllAsync(request, User.IsAdmin(), cancellationToken);
+        var result = await _announcementService.GetAllAsync(request, _currentUserService.IsAdmin(), cancellationToken);
         return Ok(result);
     }
 
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<Response?>> GetById(Guid id)
     {
-        var result = await _announcementService.GetByIdAsync(id, User.IsAdmin());
+        var result = await _announcementService.GetByIdAsync(id, _currentUserService.IsAdmin());
         return Ok(result);
     }
 
@@ -44,7 +46,7 @@ public class AnnouncementController : ControllerBase
     public async Task<ActionResult<Response>> Create(CreateRequest request)
     {
         
-        var reuslt = await _announcementService.CreateAsync(request, User.GetCurrentUserId());
+        var reuslt = await _announcementService.CreateAsync(request, _currentUserService.GetCurrentUserId());
         return CreatedAtAction(
             nameof(GetById),
             new { id = reuslt.Id },
@@ -58,7 +60,7 @@ public class AnnouncementController : ControllerBase
     public async Task<ActionResult<Response?>> Update(Guid id,UpdateRequest request)
     {
         request.Id = id; // burda ne yaptım bilmiyorum bi an mantığıma yatmadı
-        var result = await _announcementService.UpdateAsync(request, User.GetCurrentUserId(), User.IsAdmin());
+        var result = await _announcementService.UpdateAsync(request, _currentUserService.GetCurrentUserId(), _currentUserService.IsAdmin());
         return Ok(result);
     }
 
@@ -67,7 +69,7 @@ public class AnnouncementController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<ActionResult<Response?>> Publish(Guid id)
     {
-        var result = await _announcementService.PublishAsync(id, User.GetCurrentUserId());
+        var result = await _announcementService.PublishAsync(id, _currentUserService.GetCurrentUserId());
         return Ok(result);
     }
 
@@ -76,7 +78,7 @@ public class AnnouncementController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<ActionResult<Response?>> Unpublish(Guid id)
     {
-        var result = await _announcementService.UnpublishAsync(id, User.GetCurrentUserId());
+        var result = await _announcementService.UnpublishAsync(id, _currentUserService.GetCurrentUserId());
         return Ok(result);
     }
 
@@ -84,7 +86,7 @@ public class AnnouncementController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<ActionResult<bool>> Archive(Guid id)
     {
-        var result = await _announcementService.ArchiveAsync(id, User.GetCurrentUserId());
+        var result = await _announcementService.ArchiveAsync(id, _currentUserService.GetCurrentUserId());
         return Ok(result);
     }
     

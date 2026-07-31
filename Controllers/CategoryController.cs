@@ -17,9 +17,11 @@ public class CategoryController : ControllerBase
 {
     
     private readonly ICategoryService _categoryService;
-
-    public CategoryController(ICategoryService categoryService)
+    private readonly  ICurrentUserService _currentUserService;
+    
+    public CategoryController(ICurrentUserService currentUserService,ICategoryService categoryService)
     {
+        _currentUserService = currentUserService;
         _categoryService = categoryService;
     }
     
@@ -42,14 +44,14 @@ public class CategoryController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<List<Response>>> GetAll([FromQuery] bool includeUnactivated = false)
     {
-        var result = await _categoryService.GetAllAsync(includeUnactivated && User.IsAdmin());
+        var result = await _categoryService.GetAllAsync(includeUnactivated && _currentUserService.IsAdmin());
         return Ok(result);
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<Response>> GetById(Guid id, [FromQuery] bool includeUnactivated = false)
     {
-        var result = await _categoryService.GetByIdAsync(id, includeUnactivated && User.IsAdmin());
+        var result = await _categoryService.GetByIdAsync(id, includeUnactivated && _currentUserService.IsAdmin());
         return Ok(result);
     }
 

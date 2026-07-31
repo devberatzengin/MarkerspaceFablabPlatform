@@ -10,10 +10,10 @@ public class UnpublishedState : IAnnouncementState
     public async Task PublishAsync(Announcement announcement, IUnitOfWork unitOfWork)
     {
         announcement.Status = ContentStatus.Published;
-        announcement.UpdatedAt  = DateTime.Now;
+        announcement.UpdatedAt  = DateTime.UtcNow;
         
         unitOfWork.Announcements.Update(announcement);
-        await unitOfWork.Announcements.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
     }
 
     public async Task UnpublishAsync(Announcement announcement, IUnitOfWork unitOfWork)
@@ -24,9 +24,9 @@ public class UnpublishedState : IAnnouncementState
     public async Task ArchiveAsync(Announcement announcement, IUnitOfWork unitOfWork)
     {
         announcement.Status = ContentStatus.Archived;
-        announcement.UpdatedAt  = DateTime.Now;
+        announcement.UpdatedAt  = DateTime.UtcNow;
         
         unitOfWork.Announcements.Update(announcement);
-        await unitOfWork.Announcements.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
     }
 }

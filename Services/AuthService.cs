@@ -16,12 +16,12 @@ public class AuthService : IAuthService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher<User> _passwordHasher;
-    private readonly TokenService _tokenService;
+    private readonly ITokenService _tokenService;
     private readonly IValidator<RegisterRequest> _registerValidator;
     private readonly IValidator<LoginRequest> _loginValidator;
     private readonly ILogger<AuthService> _logger;
 
-    public AuthService(IUnitOfWork unitOfWork,IUserRepository userRepository, ILogger<AuthService> logger, TokenService tokenService, IPasswordHasher<User> passwordHasher, IValidator<RegisterRequest> registerValidator, IValidator<LoginRequest> loginValidator)
+    public AuthService(IUnitOfWork unitOfWork,IUserRepository userRepository, ILogger<AuthService> logger, ITokenService tokenService, IPasswordHasher<User> passwordHasher, IValidator<RegisterRequest> registerValidator, IValidator<LoginRequest> loginValidator)
     {
         _unitOfWork = unitOfWork;
         _tokenService = tokenService;
@@ -60,7 +60,7 @@ public class AuthService : IAuthService
         
         user.PasswordHash = _passwordHasher.HashPassword(user, request.Password);
         await _unitOfWork.Users.AddAsync(user);
-        await _unitOfWork.Users.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync();
 
         _logger.LogInformation("Registered user {UserId}", user.Id);
 

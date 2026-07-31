@@ -12,7 +12,7 @@ public class DraftState : IAnnouncementState
         announcement.Status = ContentStatus.Published;
         announcement.UpdatedAt = DateTime.UtcNow;
         unitOfWork.Announcements.Update(announcement);
-        await unitOfWork.Announcements.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
     }
 
     public Task UnpublishAsync(Announcement announcement, IUnitOfWork unitOfWork)
@@ -26,6 +26,6 @@ public class DraftState : IAnnouncementState
         announcement.UpdatedAt = DateTime.UtcNow;
         
         unitOfWork.Announcements.Update(announcement);
-        await unitOfWork.Announcements.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
     }
 }

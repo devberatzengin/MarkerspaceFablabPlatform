@@ -2,6 +2,7 @@ using MakerspaceFablabPlatform.Dtos.Common;
 using MakerspaceFablabPlatform.Helpers;
 using Response = MakerspaceFablabPlatform.Dtos.Equipment.Response;
 using MakerspaceFablabPlatform.Dtos.Equipment;
+using MakerspaceFablabPlatform.Excepitons;
 using MakerspaceFablabPlatform.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,10 +16,11 @@ namespace MakerspaceFablabPlatform.Controllers;
 public class EquipmentController : ControllerBase
 {
     
-    
+    private readonly ICurrentUserService _currentUserService;
     private readonly IEquipmentService _equipmentService;
-    public EquipmentController(IEquipmentService equipmentService)
+    public EquipmentController(ICurrentUserService currentUserService ,IEquipmentService equipmentService)
     {
+        _currentUserService = currentUserService;
         _equipmentService = equipmentService;
     }
     
@@ -41,7 +43,7 @@ public class EquipmentController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<ActionResult<Response>> CreateAsync(CreateRequest request, CancellationToken token)
     {
-        var result =  await _equipmentService.CreateAsync(request, User.GetCurrentUserId(), token);
+        var result =  await _equipmentService.CreateAsync(request, _currentUserService.GetCurrentUserId(), token);
         
         return Ok(result);
     }
@@ -50,7 +52,7 @@ public class EquipmentController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<ActionResult<Response>> UpdateAsync(UpdateRequest request, CancellationToken token)
     {
-        var result = await _equipmentService.UpdateAsync(request, User.GetCurrentUserId(), token);
+        var result = await _equipmentService.UpdateAsync(request, _currentUserService.GetCurrentUserId(), token);
         
         return Ok(result);
         
@@ -68,21 +70,21 @@ public class EquipmentController : ControllerBase
     [HttpPatch("{id:guid}/rent")]
     public async Task<ActionResult<Response>> RentAsync(Guid id, TimeSpan span, CancellationToken token)
     {
-        var result = await _equipmentService.RentAsync(id, span, User.GetCurrentUserId(), token);
+        var result = await _equipmentService.RentAsync(id, span, _currentUserService.GetCurrentUserId(), token);
         return Ok(result);
     }
 
     [HttpPatch("{id:guid}/reserve")]
     public async Task<ActionResult<Response>> ReserveAsync(Guid id, TimeSpan span, CancellationToken token)
     {
-        var result = await _equipmentService.ReserveAsync(id, span, User.GetCurrentUserId(), token);
+        var result = await _equipmentService.ReserveAsync(id, span, _currentUserService.GetCurrentUserId(), token);
         return Ok(result);
     }
 
     [HttpPatch("{id:guid}/release")]
     public async Task<ActionResult<Response>> ReleaseItAsync(Guid id, CancellationToken token)
     {
-        var result = await _equipmentService.ReleaseItAsync(id, currentUserId:User.GetCurrentUserId(), token);
+        var result = await _equipmentService.ReleaseItAsync(id, currentUserId:_currentUserService.GetCurrentUserId(), token);
         return Ok(result);
     }
 
@@ -108,7 +110,7 @@ public class EquipmentController : ControllerBase
         CancellationToken token,
         [FromQuery]bool includePast = false)
     {
-        var result = await _equipmentService.MyEquipmentsAsync(User.GetCurrentUserId(), request, includePast, token);
+        var result = await _equipmentService.MyEquipmentsAsync(_currentUserService.GetCurrentUserId(), request, includePast, token);
         return Ok(result);
     }
 

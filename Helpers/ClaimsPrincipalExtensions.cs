@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using MakerspaceFablabPlatform.Excepitons;
+using Serilog.Core;
 
 namespace MakerspaceFablabPlatform.Helpers;
 
@@ -19,6 +20,9 @@ public static class ClaimsPrincipalExtensions
     {
         var value = user.FindFirstValue(ClaimTypes.NameIdentifier)
                     ?? throw new UnauthorizedException("Token'da kullanıcı kimliği bulunamadı.");
-        return Guid.Parse(value);
+        
+        Guid.TryParse(value, out var result);
+        return result == Guid.Empty ? throw new UnauthorizedException() : result;
+        
     }
 }

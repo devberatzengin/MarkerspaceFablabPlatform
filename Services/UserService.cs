@@ -72,7 +72,7 @@ public class UserService : IUserService
 
         _unitOfWork.Users.Update(dbUser);
         
-        await _unitOfWork.Users.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync();
 
         _logger.LogInformation("Updated user {UserId}", dbUser.Id);
 
@@ -87,7 +87,7 @@ public class UserService : IUserService
              throw new NotFoundException(nameof(User), id);
          
          dbUser.IsActive = false;
-         await _unitOfWork.Users.SaveChangesAsync();
+         await _unitOfWork.SaveChangesAsync();
 
          _logger.LogInformation("Deactivated user {UserId}", dbUser.Id);
     }
@@ -99,7 +99,7 @@ public class UserService : IUserService
              throw new NotFoundException(nameof(User), id);
 
          dbUser.IsActive = true;
-         await _unitOfWork.Users.SaveChangesAsync();
+         await _unitOfWork.SaveChangesAsync();
 
          _logger.LogInformation("Activated user {UserId}", dbUser.Id);
     }
@@ -112,7 +112,7 @@ public class UserService : IUserService
             throw new NotFoundException(nameof(User), id);
         
         dbUser.IsDeleted = true;
-        await _unitOfWork.Users.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync();
 
         _logger.LogInformation("Deleted user {UserId}", dbUser.Id);
     }
@@ -134,7 +134,7 @@ public class UserService : IUserService
         dbUser.PasswordHash = _passwordHasher.HashPassword(dbUser, request.NewPassword);
         dbUser.UpdatedAt = DateTime.UtcNow;
         
-        await _unitOfWork.Users.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync();
         
         _logger.LogInformation("Password changed {UserId}", dbUser.Id);
         
@@ -154,7 +154,7 @@ public class UserService : IUserService
         
         result.Balance += balance;
         _unitOfWork.Users.Update(result);
-        await _unitOfWork.Users.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync();
         
         return _mapper.Map<UserResponse>(result);
     }
