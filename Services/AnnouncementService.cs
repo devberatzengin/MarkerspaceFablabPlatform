@@ -21,7 +21,8 @@ public class AnnouncementService : IAnnouncementService
     private readonly IAnnouncementRepository _announcementRepository;
     private readonly ICategoryRepository _categoryRepository;
     private readonly IUserRepository _userRepository;
-
+    
+    private readonly IStateFactory _stateFactory;
 
     private readonly ILogger<AnnouncementService> _logger;
     private readonly IMapper _mapper;
@@ -29,8 +30,9 @@ public class AnnouncementService : IAnnouncementService
     private readonly IValidator<UpdateRequest> _updateValidator;
 
 
-    public AnnouncementService(IUnitOfWork unitOfWork, IAnnouncementRepository announcementRepository, ICategoryRepository categoryRepository, IUserRepository userRepository, ILogger<AnnouncementService> logger, IMapper mapper, IValidator<CreateRequest> createValidator, IValidator<UpdateRequest> updateValidator)
+    public AnnouncementService(IStateFactory stateFactory, IUnitOfWork unitOfWork, IAnnouncementRepository announcementRepository, ICategoryRepository categoryRepository, IUserRepository userRepository, ILogger<AnnouncementService> logger, IMapper mapper, IValidator<CreateRequest> createValidator, IValidator<UpdateRequest> updateValidator)
     {
+        _stateFactory = stateFactory;
         _unitOfWork = unitOfWork;
         _announcementRepository = announcementRepository;
         _categoryRepository = categoryRepository;
@@ -200,8 +202,9 @@ public class AnnouncementService : IAnnouncementService
         if (announcement is null)
             throw new NotFoundException(nameof(Announcement), announcementId);
 
-        var state = GetStateFor(announcement.Status);
-        await state.PublishAsync(announcement);
+        
+        var state = _stateFactory.Create(announcement.Status);
+        state.PublishAsync(announcement);
         
         _unitOfWork.Announcements.Update(announcement);
         await _unitOfWork.SaveChangesAsync();
@@ -218,8 +221,8 @@ public class AnnouncementService : IAnnouncementService
         if (announcement is null)
             throw new NotFoundException(nameof(Announcement), announcementId);
 
-        var state = GetStateFor(announcement.Status);
-        await state.UnpublishAsync(announcement);
+        var state = _stateFactory.Create(announcement.Status);
+        state.UnpublishAsync(announcement);
         _unitOfWork.Announcements.Update(announcement);
         await _unitOfWork.SaveChangesAsync();
 
@@ -235,8 +238,8 @@ public class AnnouncementService : IAnnouncementService
         if (announcement is null)
             throw new NotFoundException(nameof(Announcement), announcementId);
 
-        var state = GetStateFor(announcement.Status);
-        await state.ArchiveAsync(announcement);
+        var state = _stateFactory.Create(announcement.Status);
+        state.ArchiveAsync(announcement);
         _unitOfWork.Announcements.Update(announcement);
         await _unitOfWork.SaveChangesAsync();
 
@@ -256,4 +259,5 @@ public class AnnouncementService : IAnnouncementService
             _ => throw new InvalidOperationException($"Unknown content status {status}")
         };
     }
+    
 }

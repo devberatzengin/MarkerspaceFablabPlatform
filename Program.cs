@@ -20,6 +20,7 @@ using Scalar.AspNetCore;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using MakerspaceFablabPlatform.Entities.Enums;
+using MakerspaceFablabPlatform.States.AnnouncementStates;
 using MakerspaceFablabPlatform.Strategies.MembershipStrategies;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -93,6 +94,7 @@ public class Program
         builder.Services.AddScoped<IAnnouncementService, AnnouncementService>();
         builder.Services.AddScoped<IEquipmentService, EquipmentService>();
         builder.Services.AddScoped<IPaymentService, PaymentService>();
+        
 
         //builder.Services.AddScoped<IEventService, EventService>();
         builder.Services.AddScoped<TokenService>();
@@ -104,6 +106,9 @@ public class Program
         // fluent Validation
         builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
+        // Factories
+        builder.Services.AddScoped<IStateFactory, StateFactory>();
+        builder.Services.AddScoped<States.EquipmentStates.IStateFactory, States.EquipmentStates.StateFactory>();
         
 
     

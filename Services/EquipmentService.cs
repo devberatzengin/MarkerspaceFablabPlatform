@@ -26,11 +26,14 @@ public class EquipmentService : IEquipmentService
 
     private readonly IValidator<CreateRequest> _createValidator;
     private readonly IValidator<UpdateRequest> _updateValidator;
+    
+    private readonly IStateFactory _stateFactory;
 
     private readonly IMembershipStrategy _membershipStrategy;
 
-    public EquipmentService(IMembershipStrategy strategy, IMapper mapper, IUnitOfWork unitOfWork, ILogger<EquipmentService> logger, IValidator<CreateRequest> createValidator, IValidator<UpdateRequest> updateValidator)
+    public EquipmentService(IStateFactory stateFactory,IMembershipStrategy strategy, IMapper mapper, IUnitOfWork unitOfWork, ILogger<EquipmentService> logger, IValidator<CreateRequest> createValidator, IValidator<UpdateRequest> updateValidator)
     {
+        _stateFactory = stateFactory;
         _membershipStrategy = strategy;
         _mapper = mapper;
         _unitOfWork = unitOfWork;
@@ -221,7 +224,7 @@ public class EquipmentService : IEquipmentService
             ExpectedReturnAt = DateTime.UtcNow + span
         };
         
-        var state = GetStateFor(equipment.Status);
+        var state = _stateFactory.Create(equipment.Status);
         
         
         await state.RentedAsync(equipment, rental);
@@ -272,7 +275,7 @@ public class EquipmentService : IEquipmentService
             ExpectedReturnAt = DateTime.UtcNow + span
         };
 
-        var state = GetStateFor(equipment.Status);
+        var state = _stateFactory.Create(equipment.Status);
         await state.ReservedAsync(equipment, rental);
         
         
@@ -299,7 +302,7 @@ public class EquipmentService : IEquipmentService
         if (activeRental.UserId != currentUserId)
             throw new NotResourceOwnerException($"Bu ekipman senin tarafından kiralanmamış.Ekipmanın =>{ activeRental.UserId}, Senin => {currentUserId} ");
         
-        var state = GetStateFor(equipment.Status);
+        var state = _stateFactory.Create(equipment.Status);
         await state.AvailableAsync(equipment, activeRental);
         
         _unitOfWork.Equipments.Update(equipment);
@@ -318,7 +321,7 @@ public class EquipmentService : IEquipmentService
         if (result is null)
             throw new NotFoundException(nameof(Equipment), id);
 
-        var state = GetStateFor(result.Status);
+        var state = _stateFactory.Create(result.Status);
         await state.MaintenanceAsync(result);
         
         _unitOfWork.Equipments.Update(result);
