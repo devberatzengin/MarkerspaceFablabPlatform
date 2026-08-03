@@ -234,7 +234,7 @@ export default function AnnouncementList() {
                 <td className="px-5 py-3" onClick={(e) => e.stopPropagation()}>
                   <div className="flex gap-1 flex-wrap">
                     <button onClick={() => openEdit(a)} className="text-blue-600 hover:underline text-xs">Düzenle</button>
-                    {isAdmin && a.status === 'Draft' && (
+                    {isAdmin && (a.status === 'Draft' || a.status === 'Unpublished' )  && (
                       <button onClick={() => handleAction(a.id, 'publish')} className="text-green-600 hover:underline text-xs">Yayınla</button>
                     )}
                     {isAdmin && a.status === 'Published' && (
