@@ -190,11 +190,11 @@ public class Program
         app.MapControllers();
 
         // base admin oluşturma
-        using (var scope = app.Services.CreateScope())
+        await using (var scope = app.Services.CreateAsyncScope())
         {
-            var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+            var UoW = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
             var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher<User>>();
-            await SeedData.EnsureAdminAsync(userRepository, hasher, app.Configuration);
+            await SeedData.EnsureAdminAsync(UoW, hasher, app.Configuration);
         }
 
         await app.RunAsync();
