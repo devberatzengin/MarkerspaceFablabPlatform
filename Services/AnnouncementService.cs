@@ -201,7 +201,10 @@ public class AnnouncementService : IAnnouncementService
             throw new NotFoundException(nameof(Announcement), announcementId);
 
         var state = GetStateFor(announcement.Status);
-        await state.PublishAsync(announcement, _unitOfWork);
+        await state.PublishAsync(announcement);
+        
+        _unitOfWork.Announcements.Update(announcement);
+        await _unitOfWork.SaveChangesAsync();
         
         _logger.LogInformation("Published announcement {AnnouncementId} by user {UserId}", announcement.Id, currentUserId);
 
@@ -216,7 +219,9 @@ public class AnnouncementService : IAnnouncementService
             throw new NotFoundException(nameof(Announcement), announcementId);
 
         var state = GetStateFor(announcement.Status);
-        await state.UnpublishAsync(announcement, _unitOfWork);
+        await state.UnpublishAsync(announcement);
+        _unitOfWork.Announcements.Update(announcement);
+        await _unitOfWork.SaveChangesAsync();
 
         _logger.LogInformation("Unpublished announcement {AnnouncementId} by user {UserId}", announcement.Id, currentUserId);
 
@@ -231,7 +236,9 @@ public class AnnouncementService : IAnnouncementService
             throw new NotFoundException(nameof(Announcement), announcementId);
 
         var state = GetStateFor(announcement.Status);
-        await state.ArchiveAsync(announcement, _unitOfWork);
+        await state.ArchiveAsync(announcement);
+        _unitOfWork.Announcements.Update(announcement);
+        await _unitOfWork.SaveChangesAsync();
 
         _logger.LogInformation("Archived announcement {AnnouncementId} by user {UserId}", announcement.Id, currentUserId);
 

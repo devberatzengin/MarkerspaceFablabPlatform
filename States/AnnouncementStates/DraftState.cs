@@ -7,25 +7,20 @@ namespace MakerspaceFablabPlatform.States.AnnouncementStates;
 
 public class DraftState : IAnnouncementState
 {
-    public async Task PublishAsync(Announcement announcement, IUnitOfWork unitOfWork)
+    public async Task PublishAsync(Announcement announcement)
     {
         announcement.Status = ContentStatus.Published;
         announcement.UpdatedAt = DateTime.UtcNow;
-        unitOfWork.Announcements.Update(announcement);
-        await unitOfWork.SaveChangesAsync();
     }
 
-    public Task UnpublishAsync(Announcement announcement, IUnitOfWork unitOfWork)
+    public Task UnpublishAsync(Announcement announcement)
     {
         throw new ConflictException("Draft halindeki bir duyuru kaldırılamaz.");
     }
 
-    public async Task ArchiveAsync(Announcement announcement, IUnitOfWork unitOfWork)
+    public async Task ArchiveAsync(Announcement announcement)
     {
         announcement.Status = ContentStatus.Archived;
         announcement.UpdatedAt = DateTime.UtcNow;
-        
-        unitOfWork.Announcements.Update(announcement);
-        await unitOfWork.SaveChangesAsync();
     }
 }

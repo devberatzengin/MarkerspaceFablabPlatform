@@ -7,17 +7,17 @@ namespace MakerspaceFablabPlatform.States.AnnouncementStates;
 
 public class ArchivedState : IAnnouncementState
 {
-    public Task PublishAsync(Announcement announcement, IUnitOfWork unitOfWork)
+    public Task PublishAsync(Announcement announcement)
     {
         throw new ConflictException("Duyuru zaten arşivlenmiş.");
     }
 
-    public Task UnpublishAsync(Announcement announcement, IUnitOfWork unitOfWork)
+    public Task UnpublishAsync(Announcement announcement)
     {        
         throw new ConflictException("Duyuru zaten arşivlenmiş.");
     }
 
-    public Task ArchiveAsync(Announcement announcement, IUnitOfWork unitOfWork)
+    public Task ArchiveAsync(Announcement announcement)
     {
         throw new ConflictException("Duyuru zaten arşivlenmiş.");
     }

@@ -222,8 +222,15 @@ public class EquipmentService : IEquipmentService
         };
         
         var state = GetStateFor(equipment.Status);
-        await state.RentedAsync(equipment, rental, _unitOfWork);
-    
+        
+        
+        await state.RentedAsync(equipment, rental);
+
+
+        _unitOfWork.Equipments.Update(equipment);
+        _unitOfWork.EquipmentRentals.AddAsync(rental, token);
+        await _unitOfWork.SaveChangesAsync();
+        
         return _mapper.Map<Response>(equipment);
 
     }
@@ -266,7 +273,13 @@ public class EquipmentService : IEquipmentService
         };
 
         var state = GetStateFor(equipment.Status);
-        await state.ReservedAsync(equipment, rental, _unitOfWork);
+        await state.ReservedAsync(equipment, rental);
+        
+        
+        _unitOfWork.Equipments.Update(equipment);
+        
+        _unitOfWork.EquipmentRentals.AddAsync(rental);
+        await _unitOfWork.SaveChangesAsync();
         
         return _mapper.Map<Response>(equipment);
     }
@@ -287,7 +300,11 @@ public class EquipmentService : IEquipmentService
             throw new NotResourceOwnerException($"Bu ekipman senin tarafından kiralanmamış.Ekipmanın =>{ activeRental.UserId}, Senin => {currentUserId} ");
         
         var state = GetStateFor(equipment.Status);
-        await state.AvailableAsync(equipment, activeRental, _unitOfWork);
+        await state.AvailableAsync(equipment, activeRental);
+        
+        _unitOfWork.Equipments.Update(equipment);
+        _unitOfWork.EquipmentRentals.Update(activeRental);
+        await _unitOfWork.SaveChangesAsync();
         
         _logger.LogInformation($"Released equipment {equipment.Id} by {currentUserId}");
             
@@ -302,7 +319,10 @@ public class EquipmentService : IEquipmentService
             throw new NotFoundException(nameof(Equipment), id);
 
         var state = GetStateFor(result.Status);
-        await state.MaintenanceAsync(result, _unitOfWork);
+        await state.MaintenanceAsync(result);
+        
+        _unitOfWork.Equipments.Update(result);
+        await _unitOfWork.SaveChangesAsync();
 
         var activeRental = await _unitOfWork.EquipmentRentals.GetActiveRentalAsync(id, token);
 

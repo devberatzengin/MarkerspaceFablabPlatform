@@ -6,7 +6,7 @@ namespace MakerspaceFablabPlatform.States.AnnouncementStates;
 
 public interface IAnnouncementState
 {
-    Task PublishAsync(Announcement announcement, IUnitOfWork unitOfWork);
-    Task UnpublishAsync(Announcement announcement, IUnitOfWork unitOfWork);
-    Task ArchiveAsync(Announcement announcement, IUnitOfWork unitOfWork);
+    Task PublishAsync(Announcement announcement);
+    Task UnpublishAsync(Announcement announcement);
+    Task ArchiveAsync(Announcement announcement);
 }

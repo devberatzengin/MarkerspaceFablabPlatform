@@ -7,26 +7,20 @@ namespace MakerspaceFablabPlatform.States.AnnouncementStates;
 
 public class PublishedState : IAnnouncementState
 {
-    public Task PublishAsync(Announcement announcement, IUnitOfWork unitOfWork)
+    public Task PublishAsync(Announcement announcement)
     {
         throw new ConflictException("Duyuru zaten yayında.");
     }
 
-    public async Task UnpublishAsync(Announcement announcement, IUnitOfWork unitOfWork)
+    public async Task UnpublishAsync(Announcement announcement)
     {
         announcement.Status = ContentStatus.Unpublished;
         announcement.UpdatedAt  = DateTime.UtcNow;
-        
-        unitOfWork.Announcements.Update(announcement);
-        await unitOfWork.SaveChangesAsync();
     }
 
-    public async Task ArchiveAsync(Announcement announcement, IUnitOfWork unitOfWork)
+    public async Task ArchiveAsync(Announcement announcement)
     {
         announcement.Status = ContentStatus.Archived;
         announcement.UpdatedAt  = DateTime.UtcNow;
-        
-        unitOfWork.Announcements.Update(announcement);
-        await unitOfWork.SaveChangesAsync();
     }
 }
