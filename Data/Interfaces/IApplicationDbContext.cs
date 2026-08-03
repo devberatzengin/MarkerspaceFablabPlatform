@@ -12,8 +12,10 @@ public interface IApplicationDbContext
     DbSet<Equipment> Equipments { get; }
     DbSet<EquipmentRental> EquipmentRentals { get; }
     DbSet<Payment> Payments { get; }
-    
-    DbSet<T> Set<T>() where T : class;  
+    DbSet<Subscription> Subscriptions { get; }
+    DbSet<Notification> Notifications { get; }
+
+    DbSet<T> Set<T>() where T : class;
     
     Task<int> SaveChangesAsync(CancellationToken ct = default);
 }

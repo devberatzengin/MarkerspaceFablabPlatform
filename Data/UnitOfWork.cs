@@ -12,6 +12,8 @@ public class UnitOfWork : IUnitOfWork
     private readonly IEquipmentRepository _equipmentRepository;
     private readonly IEquipmentRentalRepository _equipmentRentalRepository;
     private readonly IPaymentRepository _paymentRepository;
+    private readonly ISubscriptionRepository _subscriptionRepository;
+    private readonly INotificationRepository _notificationRepository;
 
     public UnitOfWork(
         AppDbContext dbContext,
@@ -20,7 +22,9 @@ public class UnitOfWork : IUnitOfWork
         ICategoryRepository categoryRepository,
         IUserRepository userRepository,
         IEquipmentRepository equipmentRepository,
-        IEquipmentRentalRepository equipmentRentalRepository)
+        IEquipmentRentalRepository equipmentRentalRepository,
+        ISubscriptionRepository subscriptionRepository,
+        INotificationRepository notificationRepository)
     {
         _paymentRepository = paymentRepository;
         _dbContext = dbContext;
@@ -29,6 +33,8 @@ public class UnitOfWork : IUnitOfWork
         _userRepository = userRepository;
         _equipmentRepository = equipmentRepository;
         _equipmentRentalRepository = equipmentRentalRepository;
+        _subscriptionRepository = subscriptionRepository;
+        _notificationRepository = notificationRepository;
     }
 
     public IAnnouncementRepository Announcements => _announcementRepository;
@@ -37,6 +43,8 @@ public class UnitOfWork : IUnitOfWork
     public IEquipmentRepository Equipments => _equipmentRepository;
     public IEquipmentRentalRepository EquipmentRentals => _equipmentRentalRepository;
     public IPaymentRepository Payments => _paymentRepository;
+    public ISubscriptionRepository Subscriptions => _subscriptionRepository;
+    public INotificationRepository Notifications => _notificationRepository;
 
     public async Task<int> SaveChangesAsync(CancellationToken ct = default)
     {
