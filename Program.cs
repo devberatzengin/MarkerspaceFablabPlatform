@@ -98,9 +98,6 @@ public class Program
         builder.Services.AddScoped<INotificationChannelFactory, NotificationChannelFactory>();
         
         builder.Services.AddScoped<IDomainEventPublisher, DomainEventPublisher>();
-        builder.Services.AddScoped<IDomainEventHandler<AnnouncementPublishedEvent>, AnnouncementPublishedNotificationHandler>();
-        
-        
         //Events
         builder.Services.AddScoped<IDomainEventHandler<AnnouncementPublishedEvent>, AnnouncementPublishedNotificationHandler>();
         builder.Services.AddScoped<IDomainEventHandler<EquipmentRelasedEvent>, EquipmentRelasedNotificationHandler>();
