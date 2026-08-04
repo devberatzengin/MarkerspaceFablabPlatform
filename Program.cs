@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 using MakerspaceFablabPlatform.Entities;
 using MakerspaceFablabPlatform.Data.CachedRepositoties;
+using MakerspaceFablabPlatform.Events;
+using MakerspaceFablabPlatform.Events.Handlers;
 using MakerspaceFablabPlatform.Handlers;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -20,6 +22,8 @@ using Scalar.AspNetCore;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using MakerspaceFablabPlatform.Entities.Enums;
+using MakerspaceFablabPlatform.Events.Handlers;
+using MakerspaceFablabPlatform.Notifications;
 using MakerspaceFablabPlatform.States.AnnouncementStates;
 using MakerspaceFablabPlatform.Strategies.MembershipStrategies;
 using Microsoft.Extensions.Caching.Memory;
@@ -85,6 +89,21 @@ public class Program
         builder.Services.AddScoped<IEquipmentRepository, EquipmentRepository>();
         builder.Services.AddScoped<IEquipmentRentalRepository, EquipmentRentalRepository>();
         builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+        
+        builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
+        builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+
+        builder.Services.AddScoped<INotificationChannel, InAppNotificationChannel>();
+        builder.Services.AddScoped<INotificationChannel, SmtpEmailChannel>();
+        builder.Services.AddScoped<INotificationChannelFactory, NotificationChannelFactory>();
+        
+        builder.Services.AddScoped<IDomainEventPublisher, DomainEventPublisher>();
+        builder.Services.AddScoped<IDomainEventHandler<AnnouncementPublishedEvent>, AnnouncementPublishedNotificationHandler>();
+        
+        
+        //Events
+        builder.Services.AddScoped<IDomainEventHandler<AnnouncementPublishedEvent>, AnnouncementPublishedNotificationHandler>();
+
 
         // Auto Mapper for updaterequest => entity transaction
         builder.Services.AddAutoMapper(cfg => { }, typeof(Program).Assembly);
@@ -94,6 +113,8 @@ public class Program
         builder.Services.AddScoped<IAnnouncementService, AnnouncementService>();
         builder.Services.AddScoped<IEquipmentService, EquipmentService>();
         builder.Services.AddScoped<IPaymentService, PaymentService>();
+        builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
+        builder.Services.AddScoped<INotificationService, NotificationService>();
         
 
         //builder.Services.AddScoped<IEventService, EventService>();
