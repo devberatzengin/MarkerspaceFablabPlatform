@@ -139,6 +139,12 @@ export interface EquipmentUpdateRequest {
   requiredUserLevel?: number;
 }
 
+/** İleri tarihli rezervasyon isteği. Tarihler ISO-8601 UTC ("...Z") olarak gönderilir. */
+export interface ReserveAheadRequest {
+  startAt: string;
+  endAt: string;
+}
+
 export interface EquipmentRentalResponse {
   id: string;
   userId: string;

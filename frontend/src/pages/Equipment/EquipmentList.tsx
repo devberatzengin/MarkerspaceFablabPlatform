@@ -42,6 +42,24 @@ const placementLabel: Record<EquipmentPlacementType, string> = {
   FloorStationary: 'Sabit',
 };
 
+/** Date -> datetime-local input'unun beklediği "YYYY-MM-DDTHH:mm" (yerel saat) formatı. */
+const toLocalInputValue = (d: Date) => {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
+
+/** İki tarih arası süreyi "2 gün 3 saat" gibi okunur hale getirir. */
+const formatDuration = (start: Date, end: Date) => {
+  const totalMinutes = Math.round((end.getTime() - start.getTime()) / 60000);
+  if (totalMinutes <= 0) return '-';
+  const days = Math.floor(totalMinutes / 1440);
+  const hours = Math.floor((totalMinutes % 1440) / 60);
+  const minutes = totalMinutes % 60;
+  return [days && `${days} gün`, hours && `${hours} saat`, minutes && `${minutes} dk`]
+    .filter(Boolean)
+    .join(' ');
+};
+
 const typeOptions: EquipmentType[] = ['DigitalFabrication', 'HandTools', 'PowerTools', 'Electronics', 'Measurement'];
 const statusOptions: EquipmentStatus[] = ['Available', 'Reserved', 'Rented', 'Maintenance'];
 const placementOptions: EquipmentPlacementType[] = ['Portable', 'Benchtop', 'FloorStationary'];
@@ -56,6 +74,10 @@ export default function EquipmentList() {
   const [showCreate, setShowCreate] = useState(false);
   const [rentModal, setRentModal] = useState<{ id: string; action: 'rent' | 'reserve' } | null>(null);
   const [duration, setDuration] = useState('1:00:00');
+  const [aheadModal, setAheadModal] = useState<{ id: string; name: string } | null>(null);
+  const [ahead, setAhead] = useState({ startAt: '', endAt: '' });
+  const [aheadError, setAheadError] = useState('');
+  const [aheadBusy, setAheadBusy] = useState(false);
   const [form, setForm] = useState({
     name: '',
     description: '',
@@ -116,6 +138,63 @@ export default function EquipmentList() {
       fetchData();
     } catch (err: any) {
       setError(err.response?.data?.message || err.response?.data || 'İşlem başarısız');
+    }
+  };
+
+  // Modal açılırken makul bir varsayılan doldur: yarın, tam saat başı, 2 saatlik pencere.
+  const openAheadModal = (eq: EquipmentResponse) => {
+    const start = new Date();
+    start.setDate(start.getDate() + 1);
+    start.setMinutes(0, 0, 0);
+    const end = new Date(start);
+    end.setHours(end.getHours() + 2);
+
+    setAhead({ startAt: toLocalInputValue(start), endAt: toLocalInputValue(end) });
+    setAheadError('');
+    setAheadModal({ id: eq.id, name: eq.name });
+  };
+
+  const handleReserveAhead = async () => {
+    if (!aheadModal) return;
+
+    if (!ahead.startAt || !ahead.endAt) {
+      setAheadError('Başlangıç ve bitiş tarihi zorunlu.');
+      return;
+    }
+
+    const start = new Date(ahead.startAt);
+    const end = new Date(ahead.endAt);
+
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+      setAheadError('Geçersiz tarih.');
+      return;
+    }
+    if (start.getTime() <= Date.now()) {
+      setAheadError('Başlangıç tarihi gelecekte olmalı.');
+      return;
+    }
+    if (end <= start) {
+      setAheadError('Bitiş tarihi başlangıçtan sonra olmalı.');
+      return;
+    }
+
+    setAheadBusy(true);
+    try {
+      // Kolonlar "timestamp with time zone" olduğu için yerel saati UTC'ye çevirip gönderiyoruz.
+      await equipmentApi.reserveAhead(aheadModal.id, {
+        startAt: start.toISOString(),
+        endAt: end.toISOString(),
+      });
+      setAheadModal(null);
+      setError('');
+      fetchData();
+    } catch (err: any) {
+      const data = err.response?.data;
+      setAheadError(
+        data?.detail || data?.message || (typeof data === 'string' ? data : '') || 'Rezervasyon başarısız.',
+      );
+    } finally {
+      setAheadBusy(false);
     }
   };
 
@@ -237,6 +316,60 @@ export default function EquipmentList() {
         </div>
       )}
 
+      {/* İleri Tarihli Rezervasyon Modal */}
+      {aheadModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="font-semibold text-gray-900 mb-1">İleri Tarihe Al</h3>
+            <p className="text-sm text-gray-500 mb-4">{aheadModal.name}</p>
+
+            <label className="block text-sm text-gray-700 mb-1">Başlangıç</label>
+            <input
+              type="datetime-local"
+              value={ahead.startAt}
+              min={toLocalInputValue(new Date())}
+              onChange={(e) => setAhead((p) => ({ ...p, startAt: e.target.value }))}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+
+            <label className="block text-sm text-gray-700 mb-1">Bitiş</label>
+            <input
+              type="datetime-local"
+              value={ahead.endAt}
+              min={ahead.startAt || toLocalInputValue(new Date())}
+              onChange={(e) => setAhead((p) => ({ ...p, endAt: e.target.value }))}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+
+            {ahead.startAt && ahead.endAt && new Date(ahead.endAt) > new Date(ahead.startAt) && (
+              <p className="text-xs text-gray-500 mb-3">
+                Toplam süre: {formatDuration(new Date(ahead.startAt), new Date(ahead.endAt))}
+              </p>
+            )}
+
+            {aheadError && (
+              <div className="bg-red-50 text-red-600 p-3 rounded mb-3 text-sm">{aheadError}</div>
+            )}
+
+            <div className="flex gap-2">
+              <button
+                onClick={handleReserveAhead}
+                disabled={aheadBusy}
+                className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-4 py-2 rounded-md text-sm"
+              >
+                {aheadBusy ? 'Gönderiliyor...' : 'Rezerve Et'}
+              </button>
+              <button
+                onClick={() => setAheadModal(null)}
+                className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm"
+              >
+                İptal
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Create Form */}
       {showCreate && isAdmin && (
         <div className="bg-white rounded-lg shadow p-5 mb-6">
@@ -326,6 +459,16 @@ export default function EquipmentList() {
                     Rezerve Et
                   </button>
                 )}
+              {/* İleri tarihli rezervasyon anlık duruma bağlı değil: makine şu an kirada olsa
+                  bile gelecekteki boş bir aralık için rezerve edilebilir. */}
+              {eq.status !== 'Maintenance' && (
+                <button
+                  onClick={() => openAheadModal(eq)}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded text-xs"
+                >
+                  İleri Tarihe Al
+                </button>
+              )}
               {(eq.status === 'Rented' || eq.status === 'Reserved') &&
                 eq.currentUserId === user?.id && (
                   <button
