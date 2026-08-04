@@ -8,9 +8,9 @@ public class EquipmentRelasedNotificationHandler : IDomainEventHandler<Equipment
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly INotificationChannelFactory _channelFactory;
-    private readonly ILogger<AnnouncementPublishedNotificationHandler> _logger;
+    private readonly ILogger<EquipmentRelasedNotificationHandler> _logger;
 
-    public EquipmentRelasedNotificationHandler(IUnitOfWork unitOfWork,INotificationChannelFactory channelFactory, ILogger<AnnouncementPublishedNotificationHandler> logger)
+    public EquipmentRelasedNotificationHandler(IUnitOfWork unitOfWork,INotificationChannelFactory channelFactory, ILogger<EquipmentRelasedNotificationHandler> logger)
     {
         _unitOfWork = unitOfWork;
         _channelFactory = channelFactory;
@@ -25,6 +25,7 @@ public class EquipmentRelasedNotificationHandler : IDomainEventHandler<Equipment
         if (subscriptions.Count == 0)
         {
             _logger.LogInformation("Not found any subscriptions for {EquipmentId}, not created any notification(s)", domainEvent.EquipmentId);
+            return;
         }
 
         var sentCount = 0;
