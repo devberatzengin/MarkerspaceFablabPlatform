@@ -189,6 +189,45 @@ export interface PaymentCreateRequest {
   userId?: string;
 }
 
+export type SubscriptionTargetType = 'Category' | 'Equipment';
+export type NotificationChannelType = 'InApp' | 'Email';
+export type NotificationType =
+  | 'AnnouncementPublished'
+  | 'EquipmentMaintenance'
+  | 'EquipmentAvailable'
+  | 'RentalEndsSoon';
+
+export interface SubscriptionResponse {
+  id: string;
+  targetType: SubscriptionTargetType;
+  categoryId?: string;
+  categoryName?: string;
+  equipmentId?: string;
+  equipmentName?: string;
+  channel: NotificationChannelType;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface SubscriptionCreateRequest {
+  targetType: SubscriptionTargetType;
+  categoryId?: string;
+  equipmentId?: string;
+  channel: NotificationChannelType;
+}
+
+export interface NotificationResponse {
+  id: string;
+  type: NotificationType;
+  channel: NotificationChannelType;
+  title: string;
+  message: string;
+  relatedEntityId?: string;
+  isRead: boolean;
+  readAt?: string;
+  createdAt: string;
+}
+
 export interface PagedResponse<T> {
   items: T[];
   page: number;

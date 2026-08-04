@@ -10,6 +10,8 @@ import EquipmentList from './pages/Equipment/EquipmentList';
 import MyEquipment from './pages/Equipment/MyEquipment';
 import PaymentList from './pages/Payments/PaymentList';
 import CategoryList from './pages/Categories/CategoryList';
+import NotificationList from './pages/Notifications/NotificationList';
+import SubscriptionList from './pages/Subscriptions/SubscriptionList';
 import UserList from './pages/Users/UserList';
 import Profile from './pages/Profile/Profile';
 
@@ -33,6 +35,8 @@ export default function App() {
             <Route path="/equipment" element={<EquipmentList />} />
             <Route path="/my-equipment" element={<MyEquipment />} />
             <Route path="/payments" element={<PaymentList />} />
+            <Route path="/notifications" element={<NotificationList />} />
+            <Route path="/subscriptions" element={<SubscriptionList />} />
             <Route
               path="/categories"
               element={
