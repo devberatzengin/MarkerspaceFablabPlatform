@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { announcementsApi } from '../../api/announcements';
 import { equipmentApi } from '../../api/equipment';
+import ActivityCalendar from '../../components/ActivityCalendar';
 import type { AnnouncementResponse, EquipmentResponse, EquipmentStatus, MembershipStatus } from '../../types';
 
 const equipmentStatusLabel: Record<EquipmentStatus, string> = {
@@ -72,6 +73,10 @@ export default function Dashboard() {
             {isAdmin ? 'Yönetici' : 'Kullanıcı'}
           </p>
         </div>
+      </div>
+
+      <div className="mb-8">
+        <ActivityCalendar />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
