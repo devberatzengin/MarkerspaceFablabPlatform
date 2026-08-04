@@ -16,6 +16,9 @@ public interface IEquipmentService
     
     Task<Response> RentAsync(Guid id,TimeSpan span, Guid currentUserId, CancellationToken token);
     Task<Response> ReserveAsync(Guid id,TimeSpan span, Guid currentUserId, CancellationToken token);
+
+    Task<Response> RentLaterAsync(Guid id, DateTime rentStartDate, TimeSpan span, Guid currentUserId, CancellationToken token);
+    Task<Response> ReserveLaterAsync(Guid id, DateTime rentStartDate, TimeSpan span, Guid currentUserId, CancellationToken token);
     
     Task<Response> ReleaseItAsync(Guid id, Guid currentUserId, CancellationToken token);
     Task<Response> SetMaintenanceAsync(Guid id, CancellationToken token);
