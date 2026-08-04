@@ -47,7 +47,7 @@ public class AnnouncementService : IAnnouncementService
         _updateValidator = updateValidator;
     }
 
-    public async Task<Response?> GetByIdAsync(Guid announcementId, bool isAdmin)
+    public async Task<Response> GetByIdAsync(Guid announcementId, bool isAdmin)
     {
         var result = await _unitOfWork.Announcements.GetByIdWithDetailsAsync(announcementId);
 
@@ -208,7 +208,7 @@ public class AnnouncementService : IAnnouncementService
 
         
         var state = _stateFactory.Create(announcement.Status);
-        state.PublishAsync(announcement);
+        await state.PublishAsync(announcement);
         
         _unitOfWork.Announcements.Update(announcement);
         await _unitOfWork.SaveChangesAsync();
@@ -232,7 +232,7 @@ public class AnnouncementService : IAnnouncementService
             throw new NotFoundException(nameof(Announcement), announcementId);
 
         var state = _stateFactory.Create(announcement.Status);
-        state.UnpublishAsync(announcement);
+        await state.UnpublishAsync(announcement);
         _unitOfWork.Announcements.Update(announcement);
         await _unitOfWork.SaveChangesAsync();
 
@@ -249,7 +249,7 @@ public class AnnouncementService : IAnnouncementService
             throw new NotFoundException(nameof(Announcement), announcementId);
 
         var state = _stateFactory.Create(announcement.Status);
-        state.ArchiveAsync(announcement);
+        await state.ArchiveAsync(announcement);
         _unitOfWork.Announcements.Update(announcement);
         await _unitOfWork.SaveChangesAsync();
 

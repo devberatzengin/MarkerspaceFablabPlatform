@@ -235,7 +235,7 @@ public class EquipmentService : IEquipmentService
 
 
         _unitOfWork.Equipments.Update(equipment);
-        _unitOfWork.EquipmentRentals.AddAsync(rental, token);
+        await _unitOfWork.EquipmentRentals.AddAsync(rental, token);
         await _unitOfWork.SaveChangesAsync();
         
         return _mapper.Map<Response>(equipment);
@@ -285,7 +285,7 @@ public class EquipmentService : IEquipmentService
         
         _unitOfWork.Equipments.Update(equipment);
         
-        _unitOfWork.EquipmentRentals.AddAsync(rental);
+        await _unitOfWork.EquipmentRentals.AddAsync(rental);
         await _unitOfWork.SaveChangesAsync();
         
         return _mapper.Map<Response>(equipment);
@@ -308,6 +308,11 @@ public class EquipmentService : IEquipmentService
         
         var state = _stateFactory.Create(equipment.Status);
         await state.AvailableAsync(equipment, activeRental);
+
+        if (DateTime.Now > activeRental.ExpectedReturnAt)
+        {
+            
+        }
         
         _unitOfWork.Equipments.Update(equipment);
         _unitOfWork.EquipmentRentals.Update(activeRental);
@@ -336,7 +341,6 @@ public class EquipmentService : IEquipmentService
         await state.MaintenanceAsync(result);
         
         _unitOfWork.Equipments.Update(result);
-        await _unitOfWork.SaveChangesAsync();
 
         var activeRental = await _unitOfWork.EquipmentRentals.GetActiveRentalAsync(id, token);
 
