@@ -103,7 +103,7 @@ public class Program
         
         //Events
         builder.Services.AddScoped<IDomainEventHandler<AnnouncementPublishedEvent>, AnnouncementPublishedNotificationHandler>();
-
+        builder.Services.AddScoped<IDomainEventHandler<EquipmentRelasedEvent>, EquipmentRelasedNotificationHandler>();
 
         // Auto Mapper for updaterequest => entity transaction
         builder.Services.AddAutoMapper(cfg => { }, typeof(Program).Assembly);

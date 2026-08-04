@@ -8,6 +8,7 @@ using Response = MakerspaceFablabPlatform.Dtos.Equipment.Response;
 using EquipmentRentalResponse = MakerspaceFablabPlatform.Dtos.EquipmentRental.Response;
 using MakerspaceFablabPlatform.Entities;
 using MakerspaceFablabPlatform.Entities.Enums;
+using MakerspaceFablabPlatform.Events;
 using MakerspaceFablabPlatform.Excepitons;
 using MakerspaceFablabPlatform.Services.Interfaces;
 using MakerspaceFablabPlatform.States.EquipmentStates;
@@ -27,12 +28,15 @@ public class EquipmentService : IEquipmentService
     private readonly IValidator<CreateRequest> _createValidator;
     private readonly IValidator<UpdateRequest> _updateValidator;
     
+    private readonly IDomainEventPublisher _eventPublisher;
+    
     private readonly IStateFactory _stateFactory;
 
     private readonly IMembershipStrategy _membershipStrategy;
 
-    public EquipmentService(IStateFactory stateFactory,IMembershipStrategy strategy, IMapper mapper, IUnitOfWork unitOfWork, ILogger<EquipmentService> logger, IValidator<CreateRequest> createValidator, IValidator<UpdateRequest> updateValidator)
+    public EquipmentService(IDomainEventPublisher eventPublisher,IStateFactory stateFactory,IMembershipStrategy strategy, IMapper mapper, IUnitOfWork unitOfWork, ILogger<EquipmentService> logger, IValidator<CreateRequest> createValidator, IValidator<UpdateRequest> updateValidator)
     {
+        _eventPublisher = eventPublisher;
         _stateFactory = stateFactory;
         _membershipStrategy = strategy;
         _mapper = mapper;
@@ -311,6 +315,13 @@ public class EquipmentService : IEquipmentService
         
         _logger.LogInformation($"Released equipment {equipment.Id} by {currentUserId}");
             
+        await _eventPublisher.PublishAsync(new EquipmentRelasedEvent(
+            EquipmentId: equipment.Id,
+            Title: equipment.Name,
+            RelatedEntityId: equipment.Id,
+            OccurredOn: DateTime.UtcNow
+        ));
+        
         return _mapper.Map<Response>(equipment);
     }
 

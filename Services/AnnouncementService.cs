@@ -9,6 +9,7 @@ using MakerspaceFablabPlatform.Excepitons;
 using MakerspaceFablabPlatform.Services.Interfaces;
 using FluentValidation;
 using MakerspaceFablabPlatform.Data;
+using MakerspaceFablabPlatform.Events;
 using MakerspaceFablabPlatform.States.AnnouncementStates;
 using Microsoft.EntityFrameworkCore;
 using ValidationException = MakerspaceFablabPlatform.Excepitons.ValidationException;
@@ -24,15 +25,18 @@ public class AnnouncementService : IAnnouncementService
     
     private readonly IStateFactory _stateFactory;
 
+    private readonly IDomainEventPublisher _eventPublisher;
+
     private readonly ILogger<AnnouncementService> _logger;
     private readonly IMapper _mapper;
     private readonly IValidator<CreateRequest> _createValidator;
     private readonly IValidator<UpdateRequest> _updateValidator;
 
 
-    public AnnouncementService(IStateFactory stateFactory, IUnitOfWork unitOfWork, IAnnouncementRepository announcementRepository, ICategoryRepository categoryRepository, IUserRepository userRepository, ILogger<AnnouncementService> logger, IMapper mapper, IValidator<CreateRequest> createValidator, IValidator<UpdateRequest> updateValidator)
+    public AnnouncementService(IStateFactory stateFactory, IDomainEventPublisher eventPublisher, IUnitOfWork unitOfWork, IAnnouncementRepository announcementRepository, ICategoryRepository categoryRepository, IUserRepository userRepository, ILogger<AnnouncementService> logger, IMapper mapper, IValidator<CreateRequest> createValidator, IValidator<UpdateRequest> updateValidator)
     {
         _stateFactory = stateFactory;
+        _eventPublisher = eventPublisher;
         _unitOfWork = unitOfWork;
         _announcementRepository = announcementRepository;
         _categoryRepository = categoryRepository;
@@ -210,6 +214,12 @@ public class AnnouncementService : IAnnouncementService
         await _unitOfWork.SaveChangesAsync();
         
         _logger.LogInformation("Published announcement {AnnouncementId} by user {UserId}", announcement.Id, currentUserId);
+
+        await _eventPublisher.PublishAsync(new AnnouncementPublishedEvent(
+            announcement.Id,
+            announcement.CategoryId,
+            announcement.Title,
+            DateTime.UtcNow));
 
         return _mapper.Map<Response>(announcement);
     }
