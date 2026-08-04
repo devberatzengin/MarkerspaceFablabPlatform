@@ -12,16 +12,20 @@ public class AvailableState : IEquipmentState
         throw new ConflictException("This equipment is already available available");
     }
 
-    public async Task ReservedAsync(Equipment equipment, EquipmentRental rental)
+    public Task ReservedAsync(Equipment equipment, EquipmentRental rental)
     {
         equipment.Status = EquipmentStatus.Reserved;
-        equipment.UpdatedAt  = DateTime.UtcNow;
+        equipment.UpdatedAt = DateTime.UtcNow;
+
+        return Task.CompletedTask;
     }
 
-    public async Task RentedAsync(Equipment equipment, EquipmentRental rental)
+    public Task RentedAsync(Equipment equipment, EquipmentRental rental)
     {
         equipment.Status = EquipmentStatus.Rented;
-        equipment.UpdatedAt  = DateTime.UtcNow;
+        equipment.UpdatedAt = DateTime.UtcNow;
+
+        return Task.CompletedTask;
     }
 
     public async Task MaintenanceAsync(Equipment equipment)
