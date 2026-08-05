@@ -20,6 +20,7 @@ using Scalar.AspNetCore;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using MakerspaceFablabPlatform.Entities.Enums;
+using MakerspaceFablabPlatform.Helpers;
 using MakerspaceFablabPlatform.Notifications;
 using MakerspaceFablabPlatform.States.AnnouncementStates;
 using MakerspaceFablabPlatform.Strategies.MembershipStrategies;
@@ -34,8 +35,12 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
+        
+        //Smtp Config 
+        builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection("Smtp"));
+        builder.Services.AddTransient<SmtpService>();
+        
         // Add services to the container.
-
         builder.Services.AddControllers()
             .AddJsonOptions(options =>
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
@@ -119,9 +124,6 @@ public class Program
 
     
         // JWT
-        
-        JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
-        
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
