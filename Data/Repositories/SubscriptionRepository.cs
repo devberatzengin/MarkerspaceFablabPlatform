@@ -31,7 +31,7 @@ public class SubscriptionRepository : Repository<Subscription>, ISubscriptionRep
         return await Query()
             .Include(s => s.Category)
             .Include(s => s.Equipment)
-            .Where(s => s.UserId == userId)
+            .Where(s => s.UserId == userId && s.IsActive)
             .OrderByDescending(s => s.CreatedAt)
             .ToListAsync(cancellationToken);
     }
@@ -44,11 +44,11 @@ public class SubscriptionRepository : Repository<Subscription>, ISubscriptionRep
 
     public Task<bool> ExistsForCategoryAsync(Guid userId, Guid categoryId, CancellationToken cancellationToken = default)
     {
-        return Query().AnyAsync(s => s.UserId == userId && s.CategoryId == categoryId, cancellationToken);
+        return Query().AnyAsync(s => s.UserId == userId && s.CategoryId  == categoryId && s.IsActive, cancellationToken);
     }
 
     public Task<bool> ExistsForEquipmentAsync(Guid userId, Guid equipmentId, CancellationToken cancellationToken = default)
     {
-        return Query().AnyAsync(s => s.UserId == userId && s.EquipmentId == equipmentId, cancellationToken);
+        return Query().AnyAsync(s => s.UserId == userId && s.EquipmentId == equipmentId && s.IsActive, cancellationToken);
     }
 }
