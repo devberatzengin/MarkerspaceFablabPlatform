@@ -1,6 +1,7 @@
 using MakerspaceFablabPlatform.Data.Configurations;
 using MakerspaceFablabPlatform.Data.Interfaces;
 using MakerspaceFablabPlatform.Entities;
+using MakerspaceFablabPlatform.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
@@ -28,14 +29,24 @@ public class AppDbContext : DbContext,  IApplicationDbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         
+        // Tek kural: her tarih UTC. Kind belirtilmemişse zaten UTC kabul edilir,
+        // sunucunun yerel saatine göre kaydırılmaz (ToUniversalTime bunu yapardı).
         var utcConverter = new ValueConverter<DateTime, DateTime>(
-            v => v.ToUniversalTime(),                        // DB'ye yazarken
+            v => v.ToUtc(),                                  // DB'ye yazarken
             v => DateTime.SpecifyKind(v, DateTimeKind.Utc)); // DB'den okurken
+
+        var nullableUtcConverter = new ValueConverter<DateTime?, DateTime?>(
+            v => v.HasValue ? v.Value.ToUtc() : v,
+            v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v);
 
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         foreach (var property in entityType.GetProperties())
+        {
             if (property.ClrType == typeof(DateTime))
                 property.SetValueConverter(utcConverter);
+            else if (property.ClrType == typeof(DateTime?))
+                property.SetValueConverter(nullableUtcConverter);
+        }
 
         
         base.OnModelCreating(modelBuilder);

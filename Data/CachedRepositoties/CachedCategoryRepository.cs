@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using MakerspaceFablabPlatform.Data.Interfaces;
 using MakerspaceFablabPlatform.Entities;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Primitives;
 
 namespace MakerspaceFablabPlatform.Data.CachedRepositoties;
@@ -18,6 +19,9 @@ public class CachedCategoryRepository : ICategoryRepository
 
     private static CancellationTokenSource _resetCacheToken = new();
 
+    // Bu scope'ta commit edilmeyi bekleyen bir kategori değişikliği var mı?
+    private bool _pendingInvalidation;
+
     private MemoryCacheEntryOptions BuildEntryOptions()
     {
         return new MemoryCacheEntryOptions()
@@ -25,10 +29,9 @@ public class CachedCategoryRepository : ICategoryRepository
             .AddExpirationToken(new CancellationChangeToken(_resetCacheToken.Token));
     }
 
-    private void InvalidateAll()
+    private static void InvalidateAll()
     {
-        var previousToken = _resetCacheToken;
-        _resetCacheToken = new CancellationTokenSource();
+        var previousToken = Interlocked.Exchange(ref _resetCacheToken, new CancellationTokenSource());
 
         if (!previousToken.IsCancellationRequested)
         {
@@ -37,11 +40,30 @@ public class CachedCategoryRepository : ICategoryRepository
         previousToken.Dispose();
     }
 
-    public CachedCategoryRepository(ICategoryRepository inner, IMemoryCache cache, ILogger<CachedCategoryRepository> logger)
+    private void MarkDirtyAndInvalidate()
+    {
+        _pendingInvalidation = true;
+        InvalidateAll();
+    }
+
+    private void OnSavedChanges(object? sender, SavedChangesEventArgs e)
+    {
+        if (!_pendingInvalidation)
+            return;
+
+        _pendingInvalidation = false;
+        InvalidateAll();
+
+        _logger.LogInformation("[CACHE INVALIDATE] Kategori değişikliği commit edildi, cache temizlendi");
+    }
+
+    public CachedCategoryRepository(ICategoryRepository inner, IMemoryCache cache, ILogger<CachedCategoryRepository> logger, AppDbContext dbContext)
     {
         _inner = inner;
         _cache = cache;
         _logger = logger;
+        
+        dbContext.SavedChanges += OnSavedChanges;
     }
 
     public IQueryable<Category> Query(bool asNoTracking = true)
@@ -91,20 +113,20 @@ public class CachedCategoryRepository : ICategoryRepository
     public async Task<Category> AddAsync(Category entity, CancellationToken cancellationToken = default)
     {
         var created = await _inner.AddAsync(entity, cancellationToken);
-        InvalidateAll();
+        MarkDirtyAndInvalidate();
         return created;
     }
 
     public void Update(Category entity)
     {
         _inner.Update(entity);
-        InvalidateAll();
+        MarkDirtyAndInvalidate();
     }
 
     public void Remove(Category entity)
     {
         _inner.Remove(entity);
-        InvalidateAll();
+        MarkDirtyAndInvalidate();
     }
 
     public Task<bool> NameExistsAsync(string name, Guid? excludeId = null, CancellationToken cancellationToken = default)
