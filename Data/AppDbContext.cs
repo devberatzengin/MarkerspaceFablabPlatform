@@ -19,7 +19,7 @@ public class AppDbContext : DbContext,  IApplicationDbContext
     public DbSet<User> Users { get; set; }
     public DbSet<Equipment> Equipments { get; set; }
     public DbSet<EquipmentRental> EquipmentRentals { get; set; }
-    public DbSet<Payment> Payments { get; }
+    public DbSet<Payment> Payments { get; set; }
     
     
     public DbSet<Subscription> Subscriptions { get; set; }
