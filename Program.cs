@@ -16,12 +16,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using Microsoft.AspNetCore.Identity;
-using MakerspaceFablabPlatform.Helpers;
 using Scalar.AspNetCore;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using MakerspaceFablabPlatform.Entities.Enums;
-using MakerspaceFablabPlatform.Events.Handlers;
 using MakerspaceFablabPlatform.Notifications;
 using MakerspaceFablabPlatform.States.AnnouncementStates;
 using MakerspaceFablabPlatform.Strategies.MembershipStrategies;
@@ -66,7 +64,8 @@ public class Program
             var inner = sp.GetRequiredService<CategoryRepository>();
             var cache = sp.GetRequiredService<IMemoryCache>();
             var logger = sp.GetRequiredService<ILogger<CachedCategoryRepository>>();
-            return new CachedCategoryRepository(inner, cache, logger);
+            var dbContext = sp.GetRequiredService<AppDbContext>();
+            return new CachedCategoryRepository(inner, cache, logger, dbContext);
         });
         
         //builder.Services.AddScoped<IEventRepository, EventRepository>();

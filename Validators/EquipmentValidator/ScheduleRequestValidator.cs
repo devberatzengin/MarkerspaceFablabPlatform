@@ -1,5 +1,6 @@
 using FluentValidation;
 using MakerspaceFablabPlatform.Dtos.Equipment;
+using MakerspaceFablabPlatform.Helpers;
 
 namespace MakerspaceFablabPlatform.Validators.EquipmentValidator;
 
@@ -10,7 +11,7 @@ public class ScheduleRequestValidator : AbstractValidator<ScheduleRequest>
     
         RuleFor(request => request.StartAt)
             .NotEmpty().WithMessage("Start date is required")
-            .Must(startAt => startAt.ToUniversalTime() >= DateTime.UtcNow - TimeSpan.FromMinutes(5))
+            .Must(startAt => startAt.ToUtc() >= DateTime.UtcNow - TimeSpan.FromMinutes(5))
             .WithMessage("Start date cannot past day value");
 
         

@@ -21,13 +21,15 @@ public class EquipmentProfile : Profile
             .ForMember(dest => dest.CurrentUserId,
                 opt => opt.MapFrom(src =>
                     src.EquipmentRentals
-                        .Where(r => r.ReleasedAt == null)
+                        .Where(r => r.ReleasedAt == null && r.RentedAt <= DateTime.UtcNow)
+                        .OrderBy(r => r.RentedAt)
                         .Select(r => (Guid?)r.UserId)
                         .FirstOrDefault()))
             .ForMember(dest => dest.AvailableAt,
                 opt => opt.MapFrom(src =>
                     src.EquipmentRentals
-                        .Where(r => r.ReleasedAt == null)
+                        .Where(r => r.ReleasedAt == null && r.RentedAt <= DateTime.UtcNow)
+                        .OrderBy(r => r.RentedAt)
                         .Select(r => (DateTime?)r.ExpectedReturnAt)
                         .FirstOrDefault() ?? DateTime.UtcNow));
         
