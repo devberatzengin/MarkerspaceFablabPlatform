@@ -73,11 +73,25 @@ public class EquipmentController : ControllerBase
         var result = await _equipmentService.RentAsync(id, span, _currentUserService.GetCurrentUserId(), token);
         return Ok(result);
     }
+    
+    [HttpPatch("{id:guid}/rent-later")]
+    public async Task<ActionResult<Response>> RentLaterAsync(Guid id, [FromBody] ScheduleRequest request, CancellationToken token)
+    {
+        var result = await _equipmentService.RentLaterAsync(id, request.StartAt, request.Span, _currentUserService.GetCurrentUserId(), token);
+        return Ok(result);
+    }
 
     [HttpPatch("{id:guid}/reserve")]
     public async Task<ActionResult<Response>> ReserveAsync(Guid id, TimeSpan span, CancellationToken token)
     {
         var result = await _equipmentService.ReserveAsync(id, span, _currentUserService.GetCurrentUserId(), token);
+        return Ok(result);
+    }
+    
+    [HttpPatch("{id:guid}/reserve-later")]
+    public async Task<ActionResult<Response>> ReserveLaterAsync(Guid id, [FromBody] ScheduleRequest request, CancellationToken token)
+    {
+        var result = await _equipmentService.ReserveLaterAsync(id, request.StartAt, request.Span, _currentUserService.GetCurrentUserId(), token);
         return Ok(result);
     }
 
@@ -114,18 +128,4 @@ public class EquipmentController : ControllerBase
         return Ok(result);
     }
 
-    
-    // Get All
-    // Get By Id
-    // Create
-    // Update
-    // Delete
-    
-    
-    // Maintenance e sok
-    // Rent it
-    // Reserve it
-    
-    // Release it
-    
 }
