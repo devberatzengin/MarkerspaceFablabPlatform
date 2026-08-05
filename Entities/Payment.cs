@@ -14,11 +14,12 @@ public class Payment
     
     [Required]
     public Guid EquipmentRentalId { get; set; }
-    public EquipmentRental EquipmentRental { get; set; }
+
+    public EquipmentRental EquipmentRental { get; set; } = null!;
     
     [Required]
     public Guid UserId { get; set; }
-    public User User { get; set; }
+    public User User { get; set; } = null!;
     
     
     public decimal RentalFee { get; set; } // Base rental fee
