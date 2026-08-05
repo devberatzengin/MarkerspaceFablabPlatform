@@ -139,10 +139,13 @@ export interface EquipmentUpdateRequest {
   requiredUserLevel?: number;
 }
 
-/** İleri tarihli rezervasyon isteği. Tarihler ISO-8601 UTC ("...Z") olarak gönderilir. */
-export interface ReserveAheadRequest {
+/**
+ * İleri tarihli kiralama/rezervasyon isteği (backend: Dtos/Equipment/ScheduleRequest).
+ * startAt ISO-8601 UTC ("...Z"), span .NET TimeSpan formatında ("[d.]hh:mm:ss").
+ */
+export interface ScheduleRequest {
   startAt: string;
-  endAt: string;
+  span: string;
 }
 
 export interface EquipmentRentalResponse {

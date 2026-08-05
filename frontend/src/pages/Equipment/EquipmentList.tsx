@@ -48,6 +48,18 @@ const toLocalInputValue = (d: Date) => {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 };
 
+/** İki tarih arası süreyi .NET TimeSpan formatına ("[d.]hh:mm:ss") çevirir. */
+const toTimeSpan = (start: Date, end: Date) => {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const totalSeconds = Math.round((end.getTime() - start.getTime()) / 1000);
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  const clock = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+  return days > 0 ? `${days}.${clock}` : clock;
+};
+
 /** İki tarih arası süreyi "2 gün 3 saat" gibi okunur hale getirir. */
 const formatDuration = (start: Date, end: Date) => {
   const totalMinutes = Math.round((end.getTime() - start.getTime()) / 60000);
@@ -74,7 +86,11 @@ export default function EquipmentList() {
   const [showCreate, setShowCreate] = useState(false);
   const [rentModal, setRentModal] = useState<{ id: string; action: 'rent' | 'reserve' } | null>(null);
   const [duration, setDuration] = useState('1:00:00');
-  const [aheadModal, setAheadModal] = useState<{ id: string; name: string } | null>(null);
+  const [aheadModal, setAheadModal] = useState<{
+    id: string;
+    name: string;
+    placementType: EquipmentPlacementType;
+  } | null>(null);
   const [ahead, setAhead] = useState({ startAt: '', endAt: '' });
   const [aheadError, setAheadError] = useState('');
   const [aheadBusy, setAheadBusy] = useState(false);
@@ -151,7 +167,7 @@ export default function EquipmentList() {
 
     setAhead({ startAt: toLocalInputValue(start), endAt: toLocalInputValue(end) });
     setAheadError('');
-    setAheadModal({ id: eq.id, name: eq.name });
+    setAheadModal({ id: eq.id, name: eq.name, placementType: eq.placementType });
   };
 
   const handleReserveAhead = async () => {
@@ -181,10 +197,15 @@ export default function EquipmentList() {
     setAheadBusy(true);
     try {
       // Kolonlar "timestamp with time zone" olduğu için yerel saati UTC'ye çevirip gönderiyoruz.
-      await equipmentApi.reserveAhead(aheadModal.id, {
-        startAt: start.toISOString(),
-        endAt: end.toISOString(),
-      });
+      // Backend bitiş tarihi değil süre bekliyor: end - start -> TimeSpan.
+      const payload = { startAt: start.toISOString(), span: toTimeSpan(start, end) };
+
+      // Taşınabilir ekipman kiralanır, tezgah üstü/sabit ekipman rezerve edilir.
+      if (aheadModal.placementType === 'Portable') {
+        await equipmentApi.rentLater(aheadModal.id, payload);
+      } else {
+        await equipmentApi.reserveLater(aheadModal.id, payload);
+      }
       setAheadModal(null);
       setError('');
       fetchData();
@@ -357,7 +378,11 @@ export default function EquipmentList() {
                 disabled={aheadBusy}
                 className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-4 py-2 rounded-md text-sm"
               >
-                {aheadBusy ? 'Gönderiliyor...' : 'Rezerve Et'}
+                {aheadBusy
+                  ? 'Gönderiliyor...'
+                  : aheadModal.placementType === 'Portable'
+                    ? 'Kirala'
+                    : 'Rezerve Et'}
               </button>
               <button
                 onClick={() => setAheadModal(null)}

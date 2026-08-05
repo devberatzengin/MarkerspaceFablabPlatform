@@ -4,7 +4,7 @@ import type {
   EquipmentCreateRequest,
   EquipmentUpdateRequest,
   EquipmentRentalResponse,
-  ReserveAheadRequest,
+  ScheduleRequest,
   PagedResponse,
   EquipmentStatus,
   EquipmentType,
@@ -42,10 +42,12 @@ export const equipmentApi = {
   reserve: (id: string, span: string) =>
     api.patch<EquipmentResponse>(`/Equipment/${id}/reserve`, null, { params: { span } }).then((r) => r.data),
 
-  // İleri tarihli rezervasyon. Mevcut /reserve ucunu bozmamak için ayrı bir uç kullanır;
-  // backend tarafında iki uç birleştirilirse burada sadece URL değişecek.
-  reserveAhead: (id: string, data: ReserveAheadRequest) =>
-    api.patch<EquipmentResponse>(`/Equipment/${id}/reserve-ahead`, data).then((r) => r.data),
+  // İleri tarihli işlemler: taşınabilir ekipman için rent-later, sabit/tezgah üstü için reserve-later.
+  rentLater: (id: string, data: ScheduleRequest) =>
+    api.patch<EquipmentResponse>(`/Equipment/${id}/rent-later`, data).then((r) => r.data),
+
+  reserveLater: (id: string, data: ScheduleRequest) =>
+    api.patch<EquipmentResponse>(`/Equipment/${id}/reserve-later`, data).then((r) => r.data),
 
   release: (id: string) =>
     api.patch<EquipmentResponse>(`/Equipment/${id}/release`).then((r) => r.data),
