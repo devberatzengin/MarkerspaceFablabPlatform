@@ -17,7 +17,6 @@ using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using Microsoft.AspNetCore.Identity;
 using MakerspaceFablabPlatform.Helpers;
-using Microsoft.AspNetCore.OpenApi;
 using Scalar.AspNetCore;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -42,16 +41,6 @@ public class Program
         builder.Services.AddControllers()
             .AddJsonOptions(options =>
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
-
-        builder.Services.AddOpenApi(options =>
-        {
-            options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
-            
-            options.CreateSchemaReferenceId = typeInfo =>
-                OpenApiOptions.CreateDefaultSchemaReferenceId(typeInfo) is null
-                    ? null
-                    : typeInfo.Type.FullName!.Replace("+", ".");
-        });
 
         
         // Appdbcontext'i somut kullanMAmak için
