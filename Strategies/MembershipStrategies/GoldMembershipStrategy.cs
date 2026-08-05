@@ -14,7 +14,7 @@ public class GoldMembershipStrategy : IMembershipStrategy
 
     public decimal CalculateReleaseOverTimeCost(TimeSpan releaseOverTime)
     {
-        return (decimal)releaseOverTime.TotalDays * 25;
+        return (decimal)releaseOverTime.TotalHours * 25;
     }
 
     public int CalculateMaximumEquipmentCount()

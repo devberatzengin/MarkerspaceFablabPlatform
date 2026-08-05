@@ -65,10 +65,17 @@ public class UserService : IUserService
         if (dbUser is null)
             throw new NotFoundException(nameof(User), id);
         
+        if (request.Email is not null && !string.Equals(request.Email, dbUser.Email, StringComparison.OrdinalIgnoreCase))
+        {
+            if (await _unitOfWork.Users.EmailExistsAsync(request.Email))
+                throw new DuplicateEntityException("Email already exists");
+
+            dbUser.Email = request.Email;
+        }
+
         dbUser.FirstName = request.FirstName ?? dbUser.FirstName;
         dbUser.LastName = request.LastName ?? dbUser.LastName;
         dbUser.PhoneNumber = request.PhoneNumber ?? dbUser.PhoneNumber;
-        dbUser.Email = request.Email ?? dbUser.Email;
 
         _unitOfWork.Users.Update(dbUser);
         

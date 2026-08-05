@@ -84,6 +84,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpPost("me/add-balance")]
+    [Authorize]
     public async Task<ActionResult<UserResponse>> AddBalance(decimal balance)
     {
         var result =  await _userService.AddBalanceAsync(_currentUserService.GetCurrentUserId(), balance);
