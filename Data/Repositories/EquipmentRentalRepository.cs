@@ -10,11 +10,23 @@ public class EquipmentRentalRepository : Repository<EquipmentRental>, IEquipment
     {
     }
     
-    public async Task<EquipmentRental?> GetActiveRentalAsync(Guid equipmentId, CancellationToken cancellationToken = default)
+    public async Task<EquipmentRental?> GetCurrentRentalAsync(Guid equipmentId, DateTime beforeOfThisTime, CancellationToken cancellationToken = default)
     {
         return await Query()
-            .Where(r => r.EquipmentId == equipmentId && r.ReleasedAt == null)
+            .Where(r => r.EquipmentId == equipmentId && r.ReleasedAt == null && r.RentedAt <= beforeOfThisTime)
+            .OrderBy(r => r.RentedAt)
             .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<bool> IsAlreadyTakenThisTimespan(Guid equipmentId, DateTime start, DateTime end, Guid? excludeRentalId = null, CancellationToken cancellationToken = default)
+    {
+        return await Query()
+            .AnyAsync(r => r.EquipmentId == equipmentId
+                        && r.ReleasedAt == null
+                        && (excludeRentalId == null || r.Id != excludeRentalId)
+                        && start < r.ExpectedReturnAt
+                        && r.RentedAt < end,
+                      cancellationToken);
     }
 
     public async Task<IReadOnlyList<EquipmentRental>> GetActiveRentalsByUserAsync(Guid userId, CancellationToken cancellationToken = default)
