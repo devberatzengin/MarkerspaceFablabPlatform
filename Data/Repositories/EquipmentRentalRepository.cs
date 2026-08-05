@@ -12,8 +12,22 @@ public class EquipmentRentalRepository : Repository<EquipmentRental>, IEquipment
     
     public async Task<EquipmentRental?> GetCurrentRentalAsync(Guid equipmentId, DateTime beforeOfThisTime, CancellationToken cancellationToken = default)
     {
+        // En eski açık kayıt = ekipmanı fiilen tutan taraf. Süresi dolmuş ama iade
+        // edilmemiş bir kayıt da buraya düşer; sıradaki kişinin penceresi başlamış
+        // olsa bile ekipman hâlâ gecikenin elindedir.
         return await Query()
             .Where(r => r.EquipmentId == equipmentId && r.ReleasedAt == null && r.RentedAt <= beforeOfThisTime)
+            .OrderBy(r => r.RentedAt)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<EquipmentRental?> GetOpenRentalForUserAsync(Guid equipmentId, Guid userId, DateTime at, CancellationToken cancellationToken = default)
+    {
+        return await Query()
+            .Where(r => r.EquipmentId == equipmentId
+                        && r.UserId == userId
+                        && r.ReleasedAt == null
+                        && r.RentedAt <= at)
             .OrderBy(r => r.RentedAt)
             .FirstOrDefaultAsync(cancellationToken);
     }
