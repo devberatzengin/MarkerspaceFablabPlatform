@@ -19,8 +19,14 @@ public class EquipmentRelasedNotificationHandler : IDomainEventHandler<Equipment
     
     public async Task HandleAsync(EquipmentRelasedEvent domainEvent, CancellationToken cancellationToken = default)
     {
-        var subscriptions = await _unitOfWork.Subscriptions
+        var allSubscriptions = await _unitOfWork.Subscriptions
             .GetByEquipmentIdAsync(domainEvent.EquipmentId, cancellationToken);
+
+        // Ekipmanı iade eden kişiye "müsait oldu" bildirimi göndermenin anlamı yok.
+        // ?? Mantıklı benim aklıma gelmemişti.
+        var subscriptions = domainEvent.ReleasedByUserId is null
+            ? allSubscriptions
+            : allSubscriptions.Where(s => s.UserId != domainEvent.ReleasedByUserId.Value).ToList();
 
         if (subscriptions.Count == 0)
         {
@@ -41,8 +47,8 @@ public class EquipmentRelasedNotificationHandler : IDomainEventHandler<Equipment
                     UserId = subscription.UserId,
                     Email = subscription.User.Email,
                     Type = NotificationType.EquipmentAvailable,
-                    Title = "Takip ettiğiniz Equipment şuan müsait",
-                    Message = $"\"{domainEvent.Title}\" başlıklı yeni bir duyuru yayınlandı.",
+                    Title = "Takip ettiğiniz ekipman şu an müsait",
+                    Message = $"Takip ettiğiniz \"{domainEvent.Title}\" iade edildi ve şu an kiralanabilir.",
                     RelatedEntityId = domainEvent.EquipmentId
                 };
                 

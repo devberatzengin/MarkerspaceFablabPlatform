@@ -4,4 +4,5 @@ public record EquipmentRelasedEvent (
     Guid EquipmentId,
     string Title,
     Guid RelatedEntityId,
-    DateTime OccurredOn): IDomainEvent;
+    DateTime OccurredOn,
+    Guid? ReleasedByUserId = null): IDomainEvent;
