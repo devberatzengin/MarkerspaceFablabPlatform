@@ -150,23 +150,20 @@ public class Program
 
         // Token sahibinin stratejisi. Başka bir kullanıcı adına işlem yapan
         // servisler bunu değil, IMembershipStrategyFactory'yi kullanmalı.
+        // Kullanıcı, aşağıdaki CurrentUser middleware'i tarafından request başında
+        // async olarak yüklenip HttpContext.Items'a konuyor; burada DB'ye tekrar
+        // gidilmiyor, sadece hazır veri senkron okunuyor (sync-over-async yok).
+
+        // gömdüğüm bilgiyi burda kullanarak direkt en başta membership'i alıyorum yani bu kısmı async dan sync'a çevirdik.
+
         builder.Services.AddScoped<IMembershipStrategy>(provider =>
         {
             var httpContext = provider.GetRequiredService<IHttpContextAccessor>();
-            var userRepository = provider.GetRequiredService<IUserRepository>();
             var factory = provider.GetRequiredService<IMembershipStrategyFactory>();
 
-            // Token'dan user ID al
-            var userId = httpContext.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var user = httpContext.HttpContext?.Items["CurrentUser"] as User;
 
-            if (userId != null && Guid.TryParse(userId, out var guidId))
-            {
-                // Database'den çek (Sync - .Result kullan)
-                var user = userRepository.GetByIdAsync(guidId).GetAwaiter().GetResult();
-                return factory.Create(user?.Status ?? MembershipStatus.Unknown);
-            }
-
-            return factory.Create(MembershipStatus.Unknown);
+            return factory.Create(user?.Status ?? MembershipStatus.Unknown);
         });
 
         
@@ -189,8 +186,26 @@ public class Program
 
         
         app.UseAuthentication();   // ÖNCE kimlik  — sıra önemli!
-        app.UseAuthorization();    
-        
+        app.UseAuthorization();
+
+        // Token'daki kullanıcıyı request başına bir kez, gerçek async ile yükleyip
+        // HttpContext.Items'a koyar. IMembershipStrategy factory'si (yukarıda) artık
+        // burada hazırlanan veriyi senkron okuyor; DB'ye sync-over-async ile gitmiyor.
+
+        // Middleware : artık app run olmadan önce kullancıyı alıyoruz senkron bir şekilde bunu contexte gömüyorum
+        app.Use(async (context, next) =>
+        {
+            var userId = context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userId != null && Guid.TryParse(userId, out var guidId))
+            {
+                var userRepository = context.RequestServices.GetRequiredService<IUserRepository>();
+                context.Items["CurrentUser"] = await userRepository.GetByIdAsync(guidId);
+            }
+
+            await next();
+        });
+
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
