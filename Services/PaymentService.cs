@@ -10,6 +10,7 @@ using MakerspaceFablabPlatform.Excepitons;
 using MakerspaceFablabPlatform.Services.Interfaces;
 using MakerspaceFablabPlatform.Strategies.MembershipStrategies;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace MakerspaceFablabPlatform.Services;
 
@@ -212,6 +213,16 @@ public class PaymentService : IPaymentService
         return _mapper.Map<Response>(payment);
 
             }
+            catch (DbUpdateConcurrencyException)
+            {
+                // dbuser.Balance başka bir eşzamanlı ödeme tarafından değiştirildi (xmin uyuşmuyor).
+                throw new ConcurrencyConflictException("Bakiye başka bir işlem tarafından aynı anda güncellendi. Lütfen tekrar deneyin.");
+            }
+            catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
+            {
+                // EquipmentRentalId unique index'i, aynı kiralama için eşzamanlı ikinci ödemeyi burada engelledi.
+                throw new DuplicateEntityException("Bu kiralama için zaten ödeme alınmış.");
+            }
             catch
             {
                 throw;
@@ -219,6 +230,9 @@ public class PaymentService : IPaymentService
         }
 
           }
+
+    private static bool IsUniqueConstraintViolation(DbUpdateException ex)
+        => ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation };
     
     public async Task<PagedResponse<Response>> GetAllAsync(ListRequest request, CancellationToken token = default)
     {

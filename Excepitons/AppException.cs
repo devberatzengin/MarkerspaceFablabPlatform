@@ -98,3 +98,8 @@ public class InsufficientBalanceException : ConflictException
     public InsufficientBalanceException(decimal required, decimal available)
         : base($"Yetersiz bakiye. Gereken: {required:0.00} ₺, mevcut: {available:0.00} ₺.") { }
 }
+
+public class ConcurrencyConflictException : ConflictException
+{
+    public ConcurrencyConflictException(string message = "Bu kayıt başka bir işlem tarafından aynı anda güncellendi. Lütfen tekrar deneyin.") : base(message) { }
+}
