@@ -80,12 +80,12 @@ export default function Profile() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Profilim</h1>
+      <h1 className="page-title">Profilim</h1>
 
-      {message && <div className="bg-green-50 text-green-600 p-3 rounded mb-4 text-sm">{message}</div>}
-      {error && <div className="bg-red-50 text-red-600 p-3 rounded mb-4 text-sm">{error}</div>}
+      {message && <div className="success-banner mb-6">{message}</div>}
+      {error && <div className="error-banner mb-6">{error}</div>}
 
-      <div className="bg-white rounded-lg shadow p-6 mb-6">
+      <div className="card mb-6">
         {!editing ? (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
@@ -127,13 +127,13 @@ export default function Profile() {
               </div>
             </div>
             <div className="flex gap-2 pt-4">
-              <button onClick={() => setEditing(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm">
+              <button onClick={() => setEditing(true)} className="btn-primary">
                 Düzenle
               </button>
-              <button onClick={() => setChangingPassword(true)} className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm">
+              <button onClick={() => setChangingPassword(true)} className="btn-secondary">
                 Şifre Değiştir
               </button>
-              <button onClick={() => setAddingBalance(true)} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
+              <button onClick={() => setAddingBalance(true)} className="btn-primary bg-green-600 hover:bg-green-700">
                 Bakiye Yükle
               </button>
             </div>
@@ -141,43 +141,43 @@ export default function Profile() {
         ) : (
           <form onSubmit={handleUpdate} className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs text-gray-500 mb-1">Ad</label>
+              <div className="form-group">
+                <label className="label">Ad</label>
                 <input
                   value={form.firstName}
                   onChange={(e) => setForm((p) => ({ ...p, firstName: e.target.value }))}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="input"
                 />
               </div>
-              <div>
-                <label className="block text-xs text-gray-500 mb-1">Soyad</label>
+              <div className="form-group">
+                <label className="label">Soyad</label>
                 <input
                   value={form.lastName}
                   onChange={(e) => setForm((p) => ({ ...p, lastName: e.target.value }))}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="input"
                 />
               </div>
             </div>
-            <div>
-              <label className="block text-xs text-gray-500 mb-1">E-posta</label>
+            <div className="form-group">
+              <label className="label">E-posta</label>
               <input
                 type="email"
                 value={form.email}
                 onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="input"
               />
             </div>
-            <div>
-              <label className="block text-xs text-gray-500 mb-1">Telefon</label>
+            <div className="form-group">
+              <label className="label">Telefon</label>
               <input
                 value={form.phoneNumber}
                 onChange={(e) => setForm((p) => ({ ...p, phoneNumber: e.target.value }))}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="input"
               />
             </div>
             <div className="flex gap-2">
-              <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm">Kaydet</button>
-              <button type="button" onClick={() => setEditing(false)} className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm">İptal</button>
+              <button type="submit" className="btn-primary">Kaydet</button>
+              <button type="button" onClick={() => setEditing(false)} className="btn-secondary">İptal</button>
             </div>
           </form>
         )}
@@ -185,12 +185,12 @@ export default function Profile() {
 
       {/* Add Balance */}
       {addingBalance && (
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="font-semibold text-gray-900 mb-1">Bakiye Yükle</h2>
+        <div className="card mb-6">
+          <h2 className="card-title mb-1">Bakiye Yükle</h2>
           <p className="text-xs text-gray-500 mb-4">Mevcut bakiye: {(user.balance ?? 0).toFixed(2)} ₺</p>
           <form onSubmit={handleAddBalance} className="space-y-3">
-            <div>
-              <label className="block text-xs text-gray-500 mb-1">Tutar (₺)</label>
+            <div className="form-group">
+              <label className="label">Tutar (₺)</label>
               <input
                 type="number"
                 min="0.01"
@@ -199,7 +199,7 @@ export default function Profile() {
                 onChange={(e) => setBalanceAmount(e.target.value)}
                 required
                 placeholder="100.00"
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="input"
               />
             </div>
             <div className="flex gap-2 flex-wrap">
@@ -208,18 +208,18 @@ export default function Profile() {
                   key={amount}
                   type="button"
                   onClick={() => setBalanceAmount(String(amount))}
-                  className="border border-gray-300 hover:bg-gray-50 text-gray-700 px-3 py-1 rounded-md text-xs"
+                  className="btn-secondary btn-sm"
                 >
                   +{amount} ₺
                 </button>
               ))}
             </div>
             <div className="flex gap-2">
-              <button type="submit" className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">Yükle</button>
+              <button type="submit" className="btn-primary bg-green-600 hover:bg-green-700">Yükle</button>
               <button
                 type="button"
                 onClick={() => { setAddingBalance(false); setBalanceAmount(''); }}
-                className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm"
+                className="btn-secondary"
               >
                 İptal
               </button>
@@ -230,32 +230,32 @@ export default function Profile() {
 
       {/* Change Password */}
       {changingPassword && (
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="font-semibold text-gray-900 mb-4">Şifre Değiştir</h2>
+        <div className="card">
+          <h2 className="card-title mb-4">Şifre Değiştir</h2>
           <form onSubmit={handleChangePassword} className="space-y-3">
-            <div>
-              <label className="block text-xs text-gray-500 mb-1">Mevcut Şifre</label>
+            <div className="form-group">
+              <label className="label">Mevcut Şifre</label>
               <input
                 type="password"
                 value={passwordForm.currentPassword}
                 onChange={(e) => setPasswordForm((p) => ({ ...p, currentPassword: e.target.value }))}
                 required
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="input"
               />
             </div>
-            <div>
-              <label className="block text-xs text-gray-500 mb-1">Yeni Şifre</label>
+            <div className="form-group">
+              <label className="label">Yeni Şifre</label>
               <input
                 type="password"
                 value={passwordForm.newPassword}
                 onChange={(e) => setPasswordForm((p) => ({ ...p, newPassword: e.target.value }))}
                 required
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="input"
               />
             </div>
             <div className="flex gap-2">
-              <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm">Şifreyi Değiştir</button>
-              <button type="button" onClick={() => setChangingPassword(false)} className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm">İptal</button>
+              <button type="submit" className="btn-primary">Şifreyi Değiştir</button>
+              <button type="button" onClick={() => setChangingPassword(false)} className="btn-secondary">İptal</button>
             </div>
           </form>
         </div>

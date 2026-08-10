@@ -12,11 +12,11 @@ const statusLabel: Record<ContentStatus, string> = {
   Archived: 'Arşivlendi',
 };
 
-const statusColor: Record<ContentStatus, string> = {
-  Draft: 'bg-gray-100 text-gray-800',
-  Published: 'bg-green-100 text-green-800',
-  Unpublished: 'bg-yellow-100 text-yellow-800',
-  Archived: 'bg-red-100 text-red-800',
+const statusBadge: Record<ContentStatus, string> = {
+  Draft: 'badge-draft',
+  Published: 'badge-published',
+  Unpublished: 'badge-pending',
+  Archived: 'badge-archived',
 };
 
 export default function AnnouncementList() {
@@ -113,34 +113,34 @@ export default function AnnouncementList() {
           <DetailRow label="Kategori ID" value={detailItem.categoryId} />
           <DetailRow label="Yazan" value={detailItem.createdByName} />
           <DetailRow label="Yazan ID" value={detailItem.createdByUserId} />
-          <DetailRow label="Durum" value={statusLabel[detailItem.status]} badge={statusColor[detailItem.status]} />
+          <DetailRow label="Durum" value={statusLabel[detailItem.status]} badge={statusBadge[detailItem.status]} />
           <DetailRow label="Oluşturulma" value={new Date(detailItem.createdAt).toLocaleString('tr-TR')} />
           <DetailRow label="Güncellenme" value={new Date(detailItem.updatedAt).toLocaleString('tr-TR')} />
         </DetailModal>
       )}
 
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Duyurular</h1>
+        <h1 className="page-title mb-0">Duyurular</h1>
         <button
           onClick={() => { setShowCreate(true); setEditItem(null); setForm({ title: '', content: '', categoryId: '' }); }}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm"
+          className="btn-primary"
         >
           Yeni Duyuru
         </button>
       </div>
 
-      <div className="flex gap-3 mb-4">
+      <div className="flex gap-3 mb-4 flex-wrap">
         <input
           type="text"
           placeholder="Ara..."
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          className="border border-gray-300 rounded-md px-3 py-2 text-sm flex-1 max-w-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="input flex-1 min-w-[150px] max-w-xs"
         />
         <select
           value={categoryFilter}
           onChange={(e) => { setCategoryFilter(e.target.value); setPage(1); }}
-          className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="select"
         >
           <option value="">Tüm Kategoriler</option>
           {categories.map((c) => (
@@ -150,7 +150,7 @@ export default function AnnouncementList() {
         <select
           value={statusFilter}
           onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-          className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="select"
         >
           <option value="">Tüm Durumlar</option>
           {(['Draft', 'Published', 'Unpublished', 'Archived'] as ContentStatus[]).map((s) => (
@@ -160,29 +160,29 @@ export default function AnnouncementList() {
       </div>
 
       {(showCreate || editItem) && (
-        <div className="bg-white rounded-lg shadow p-5 mb-6">
-          <h2 className="font-semibold text-gray-900 mb-4">{editItem ? 'Duyuru Düzenle' : 'Yeni Duyuru'}</h2>
-          {error && <div className="bg-red-50 text-red-600 p-3 rounded mb-3 text-sm">{error}</div>}
+        <div className="card mb-6">
+          <h2 className="card-title">{editItem ? 'Duyuru Düzenle' : 'Yeni Duyuru'}</h2>
+          {error && <div className="error-banner mb-3">{error}</div>}
           <form onSubmit={editItem ? handleUpdate : handleCreate} className="space-y-3">
             <input
               placeholder="Başlık"
               value={form.title}
               onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
               required
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="input"
             />
             <textarea
               placeholder="İçerik"
               value={form.content}
               onChange={(e) => setForm((p) => ({ ...p, content: e.target.value }))}
               rows={3}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="textarea"
             />
             <select
               value={form.categoryId}
               onChange={(e) => setForm((p) => ({ ...p, categoryId: e.target.value }))}
               required
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="select"
             >
               <option value="">Kategori Seç</option>
               {categories.map((c) => (
@@ -190,13 +190,13 @@ export default function AnnouncementList() {
               ))}
             </select>
             <div className="flex gap-2">
-              <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm">
+              <button type="submit" className="btn-primary">
                 {editItem ? 'Güncelle' : 'Oluştur'}
               </button>
               <button
                 type="button"
                 onClick={() => { setShowCreate(false); setEditItem(null); setError(''); }}
-                className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm"
+                className="btn-secondary"
               >
                 İptal
               </button>
@@ -205,34 +205,34 @@ export default function AnnouncementList() {
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b">
+      <div className="card p-0 overflow-hidden">
+        <table className="table">
+          <thead>
             <tr>
-              <th className="text-left px-5 py-3 text-gray-500 font-medium">Başlık</th>
-              <th className="text-left px-5 py-3 text-gray-500 font-medium hidden md:table-cell">Kategori</th>
-              <th className="text-left px-5 py-3 text-gray-500 font-medium hidden md:table-cell">Yazan</th>
-              <th className="text-left px-5 py-3 text-gray-500 font-medium">Durum</th>
-              <th className="text-left px-5 py-3 text-gray-500 font-medium hidden md:table-cell">Tarih</th>
-              <th className="text-left px-5 py-3 text-gray-500 font-medium">İşlem</th>
+              <th>Başlık</th>
+              <th className="hidden md:table-cell">Kategori</th>
+              <th className="hidden md:table-cell">Yazan</th>
+              <th>Durum</th>
+              <th className="hidden md:table-cell">Tarih</th>
+              <th>İşlem</th>
             </tr>
           </thead>
-          <tbody className="divide-y">
+          <tbody>
             {data?.items.map((a) => (
-              <tr key={a.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => openDetail(a.id)}>
-                <td className="px-5 py-3 font-medium text-gray-900">{a.title}</td>
-                <td className="px-5 py-3 text-gray-500 hidden md:table-cell">{a.categoryName}</td>
-                <td className="px-5 py-3 text-gray-500 hidden md:table-cell">{a.createdByName}</td>
-                <td className="px-5 py-3">
-                  <span className={`text-xs px-2 py-1 rounded-full font-medium ${statusColor[a.status] ?? ''}`}>
+              <tr key={a.id} className="cursor-pointer" onClick={() => openDetail(a.id)}>
+                <td className="font-medium text-gray-900">{a.title}</td>
+                <td className="hidden md:table-cell text-gray-500">{a.categoryName}</td>
+                <td className="hidden md:table-cell text-gray-500">{a.createdByName}</td>
+                <td>
+                  <span className={`badge ${statusBadge[a.status] ?? 'badge-inactive'}`}>
                     {statusLabel[a.status] ?? ''}
                   </span>
                 </td>
-                <td className="px-5 py-3 text-gray-500 hidden md:table-cell">
+                <td className="hidden md:table-cell text-gray-500">
                   {new Date(a.createdAt).toLocaleString('tr-TR')}
                 </td>
-                <td className="px-5 py-3" onClick={(e) => e.stopPropagation()}>
-                  <div className="flex gap-1 flex-wrap">
+                <td onClick={(e) => e.stopPropagation()}>
+                  <div className="flex gap-2 flex-wrap">
                     <button onClick={() => openEdit(a)} className="text-blue-600 hover:underline text-xs">Düzenle</button>
                     {isAdmin && (a.status === 'Draft' || a.status === 'Unpublished' )  && (
                       <button onClick={() => handleAction(a.id, 'publish')} className="text-green-600 hover:underline text-xs">Yayınla</button>
@@ -241,7 +241,7 @@ export default function AnnouncementList() {
                       <button onClick={() => handleAction(a.id, 'unpublish')} className="text-yellow-600 hover:underline text-xs">Kaldır</button>
                     )}
                     {isAdmin && a.status !== 'Archived' && (
-                      <button onClick={() => handleAction(a.id, 'archive')} className="text-red-600 hover:underline text-xs">Arşivle</button>
+                      <button onClick={() => handleAction(a.id, 'archive')} className="btn-danger">Arşivle</button>
                     )}
                   </div>
                 </td>
@@ -261,7 +261,7 @@ export default function AnnouncementList() {
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
-            className="px-3 py-1 rounded border text-sm disabled:opacity-50"
+            className="btn-secondary disabled:opacity-50"
           >
             Önceki
           </button>
@@ -271,7 +271,7 @@ export default function AnnouncementList() {
           <button
             onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))}
             disabled={page === data.totalPages}
-            className="px-3 py-1 rounded border text-sm disabled:opacity-50"
+            className="btn-secondary disabled:opacity-50"
           >
             Sonraki
           </button>

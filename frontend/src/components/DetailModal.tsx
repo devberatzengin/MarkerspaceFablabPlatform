@@ -14,8 +14,8 @@ export default function DetailModal({ title, onClose, children }: DetailModalPro
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center px-6 py-4 border-b sticky top-0 bg-white rounded-t-lg">
-          <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+          <h2 className="card-title mb-0">{title}</h2>
+          <button onClick={onClose} className="btn-icon-small text-2xl leading-none">&times;</button>
         </div>
         <div className="px-6 py-4">
           {children}
@@ -31,7 +31,7 @@ export function DetailRow({ label, value, badge }: { label: string; value: React
       <span className="text-sm text-gray-500 shrink-0 mr-4">{label}</span>
       <span className="text-sm text-gray-900 text-right">
         {badge ? (
-          <span className={`text-xs px-2 py-1 rounded-full font-medium ${badge}`}>{value}</span>
+          <span className={`badge ${badge}`}>{value}</span>
         ) : (
           value || '-'
         )}

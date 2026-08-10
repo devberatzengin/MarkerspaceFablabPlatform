@@ -47,23 +47,23 @@ export default function NotificationList() {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Bildirimler</h1>
+        <h1 className="page-title mb-0">Bildirimler</h1>
         <button
           onClick={() => { setOnlyUnread((v) => !v); setPage(1); }}
-          className={`px-4 py-2 rounded-md text-sm border ${onlyUnread ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}
+          className="btn-secondary"
         >
           {onlyUnread ? 'Tümünü Göster' : 'Sadece Okunmamışlar'}
         </button>
       </div>
 
-      {error && <div className="bg-red-50 text-red-600 p-3 rounded mb-4 text-sm">{error}</div>}
+      {error && <div className="error-banner mb-4">{error}</div>}
 
-      <div className="bg-white rounded-lg shadow divide-y">
+      <div className="card p-0 divide-y divide-gray-100">
         {items.map((n) => (
           <div key={n.id} className={`px-5 py-4 flex items-start justify-between gap-4 ${n.isRead ? '' : 'bg-blue-50/40'}`}>
             <div className="min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <span className={`text-xs px-2 py-1 rounded-full font-medium ${typeBadge[n.type] ?? 'bg-gray-100 text-gray-800'}`}>
+                <span className={`badge ${typeBadge[n.type] ?? 'bg-gray-100 text-gray-800'}`}>
                   {typeLabel[n.type] ?? n.type}
                 </span>
                 {!n.isRead && <span className="w-2 h-2 rounded-full bg-blue-600" />}
@@ -95,7 +95,7 @@ export default function NotificationList() {
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page <= 1}
-            className="px-3 py-1.5 rounded border border-gray-300 text-sm disabled:opacity-40"
+            className="btn-secondary disabled:opacity-40"
           >
             Önceki
           </button>
@@ -103,7 +103,7 @@ export default function NotificationList() {
           <button
             onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))}
             disabled={page >= data.totalPages}
-            className="px-3 py-1.5 rounded border border-gray-300 text-sm disabled:opacity-40"
+            className="btn-secondary disabled:opacity-40"
           >
             Sonraki
           </button>

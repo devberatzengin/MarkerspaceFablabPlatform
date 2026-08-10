@@ -235,10 +235,10 @@ export default function ActivityCalendar() {
     });
 
   return (
-    <div className="bg-white rounded-lg shadow">
-      <div className="px-5 py-4 border-b flex flex-wrap justify-between items-center gap-3">
+    <div className="card p-0">
+      <div className="px-5 py-4 border-b border-gray-200 flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h2 className="font-semibold text-gray-900">Etkinlik Takvimi</h2>
+          <h2 className="card-title mb-0">Etkinlik Takvimi</h2>
           <p className="text-xs text-gray-500 mt-0.5">
             {loading ? 'Yükleniyor...' : `Bu ayda ${monthEventCount} kayıt`}
           </p>
@@ -248,7 +248,7 @@ export default function ActivityCalendar() {
           <button
             onClick={() => shiftMonth(-1)}
             aria-label="Önceki ay"
-            className="w-8 h-8 rounded-md border border-gray-300 text-gray-600 hover:bg-gray-50 text-sm"
+            className="btn-icon text-sm"
           >
             ‹
           </button>
@@ -258,13 +258,13 @@ export default function ActivityCalendar() {
           <button
             onClick={() => shiftMonth(1)}
             aria-label="Sonraki ay"
-            className="w-8 h-8 rounded-md border border-gray-300 text-gray-600 hover:bg-gray-50 text-sm"
+            className="btn-icon text-sm"
           >
             ›
           </button>
           <button
             onClick={goToday}
-            className="ml-2 px-3 h-8 rounded-md border border-gray-300 text-gray-600 hover:bg-gray-50 text-xs"
+            className="btn-secondary btn-sm ml-2"
           >
             Bugün
           </button>
@@ -272,7 +272,7 @@ export default function ActivityCalendar() {
       </div>
 
       {/* Legend / filtre */}
-      <div className="px-5 py-3 border-b flex flex-wrap gap-2">
+      <div className="px-5 py-3 border-b border-gray-200 flex flex-wrap gap-2">
         {allKinds.map((kind) => {
           const isHidden = hidden.has(kind);
           return (

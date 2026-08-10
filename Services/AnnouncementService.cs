@@ -90,9 +90,6 @@ public class AnnouncementService : IAnnouncementService
 
         var totalCount = await query.CountAsync(cancellationToken);
 
-        // 499 Exception Test code
-        // await Task.Delay(5000, cancellationToken);  // 15 saniye bekle
-        
 
         var items = await query
             .OrderByDescending(a => a.CreatedAt)

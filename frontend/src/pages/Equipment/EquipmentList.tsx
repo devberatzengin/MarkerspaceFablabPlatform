@@ -18,12 +18,12 @@ const statusLabel: Record<EquipmentStatus, string> = {
   Maintenance: 'Bakımda',
 };
 
-const statusColor: Record<EquipmentStatus, string> = {
-  Unknown: 'bg-gray-100 text-gray-800',
-  Available: 'bg-green-100 text-green-800',
-  Reserved: 'bg-yellow-100 text-yellow-800',
-  Rented: 'bg-blue-100 text-blue-800',
-  Maintenance: 'bg-red-100 text-red-800',
+const statusBadge: Record<EquipmentStatus, string> = {
+  Unknown: 'badge badge-inactive',
+  Available: 'badge badge-available',
+  Reserved: 'badge badge-reserved',
+  Rented: 'badge badge-info',
+  Maintenance: 'badge badge-maintenance',
 };
 
 const typeLabel: Record<EquipmentType, string> = {
@@ -258,7 +258,7 @@ export default function EquipmentList() {
           <DetailRow label="Açıklama" value={detailItem.description} />
           <DetailRow label="Tip" value={typeLabel[detailItem.type]} />
           <DetailRow label="Yerleşim" value={placementLabel[detailItem.placementType]} />
-          <DetailRow label="Durum" value={statusLabel[detailItem.status]} badge={statusColor[detailItem.status]} />
+          <DetailRow label="Durum" value={statusLabel[detailItem.status]} badge={statusBadge[detailItem.status]} />
           <DetailRow label="Gerekli Seviye" value={detailItem.requiredUserLevel} />
           <DetailRow label="Mevcut Kullanıcı ID" value={detailItem.currentUserId} />
           <DetailRow label="Kullanılabilir Tarih" value={new Date(detailItem.availableAt).toLocaleString('tr-TR')} />
@@ -267,18 +267,18 @@ export default function EquipmentList() {
       )}
 
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Ekipmanlar</h1>
+        <h1 className="page-title mb-0">Ekipmanlar</h1>
         {isAdmin && (
           <button
             onClick={() => setShowCreate(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm"
+            className="btn-primary"
           >
             Yeni Ekipman
           </button>
         )}
       </div>
 
-      {error && <div className="bg-red-50 text-red-600 p-3 rounded mb-4 text-sm">{error}</div>}
+      {error && <div className="error-banner mb-4">{error}</div>}
 
       {/* Filters */}
       <div className="flex gap-3 mb-4 flex-wrap">
@@ -287,12 +287,12 @@ export default function EquipmentList() {
           placeholder="Ara..."
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          className="border border-gray-300 rounded-md px-3 py-2 text-sm flex-1 min-w-[150px] max-w-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="input flex-1 min-w-[150px] max-w-xs"
         />
         <select
           value={statusFilter}
           onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-          className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="select"
         >
           <option value="">Tüm Durumlar</option>
           {statusOptions.map((s) => (
@@ -302,7 +302,7 @@ export default function EquipmentList() {
         <select
           value={typeFilter}
           onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }}
-          className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="select"
         >
           <option value="">Tüm Tipler</option>
           {typeOptions.map((t) => (
@@ -314,22 +314,22 @@ export default function EquipmentList() {
       {/* Rent/Reserve Modal */}
       {rentModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-sm">
-            <h3 className="font-semibold text-gray-900 mb-4">
+          <div className="card w-full max-w-sm">
+            <h3 className="card-title mb-4">
               {rentModal.action === 'rent' ? 'Kirala' : 'Rezerve Et'}
             </h3>
-            <label className="block text-sm text-gray-700 mb-2">Süre (saat:dakika:saniye)</label>
+            <label className="label">Süre (saat:dakika:saniye)</label>
             <input
               value={duration}
               onChange={(e) => setDuration(e.target.value)}
               placeholder="1:00:00"
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="input mb-4"
             />
             <div className="flex gap-2">
-              <button onClick={handleRentReserve} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm">
+              <button onClick={handleRentReserve} className="btn-primary">
                 Onayla
               </button>
-              <button onClick={() => setRentModal(null)} className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm">
+              <button onClick={() => setRentModal(null)} className="btn-secondary">
                 İptal
               </button>
             </div>
@@ -340,26 +340,26 @@ export default function EquipmentList() {
       {/* İleri Tarihli Rezervasyon Modal */}
       {aheadModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="font-semibold text-gray-900 mb-1">İleri Tarihe Al</h3>
+          <div className="card w-full max-w-md">
+            <h3 className="card-title mb-1">İleri Tarihe Al</h3>
             <p className="text-sm text-gray-500 mb-4">{aheadModal.name}</p>
 
-            <label className="block text-sm text-gray-700 mb-1">Başlangıç</label>
+            <label className="label">Başlangıç</label>
             <input
               type="datetime-local"
               value={ahead.startAt}
               min={toLocalInputValue(new Date())}
               onChange={(e) => setAhead((p) => ({ ...p, startAt: e.target.value }))}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="input mb-3"
             />
 
-            <label className="block text-sm text-gray-700 mb-1">Bitiş</label>
+            <label className="label">Bitiş</label>
             <input
               type="datetime-local"
               value={ahead.endAt}
               min={ahead.startAt || toLocalInputValue(new Date())}
               onChange={(e) => setAhead((p) => ({ ...p, endAt: e.target.value }))}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="input mb-3"
             />
 
             {ahead.startAt && ahead.endAt && new Date(ahead.endAt) > new Date(ahead.startAt) && (
@@ -369,14 +369,14 @@ export default function EquipmentList() {
             )}
 
             {aheadError && (
-              <div className="bg-red-50 text-red-600 p-3 rounded mb-3 text-sm">{aheadError}</div>
+              <div className="error-banner mb-3">{aheadError}</div>
             )}
 
             <div className="flex gap-2">
               <button
                 onClick={handleReserveAhead}
                 disabled={aheadBusy}
-                className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-4 py-2 rounded-md text-sm"
+                className="btn-primary disabled:opacity-50"
               >
                 {aheadBusy
                   ? 'Gönderiliyor...'
@@ -386,7 +386,7 @@ export default function EquipmentList() {
               </button>
               <button
                 onClick={() => setAheadModal(null)}
-                className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm"
+                className="btn-secondary"
               >
                 İptal
               </button>
@@ -397,27 +397,27 @@ export default function EquipmentList() {
 
       {/* Create Form */}
       {showCreate && isAdmin && (
-        <div className="bg-white rounded-lg shadow p-5 mb-6">
-          <h2 className="font-semibold text-gray-900 mb-4">Yeni Ekipman</h2>
+        <div className="card mb-6">
+          <h2 className="card-title mb-4">Yeni Ekipman</h2>
           <form onSubmit={handleCreate} className="space-y-3">
             <input
               placeholder="İsim"
               value={form.name}
               onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
               required
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="input"
             />
             <input
               placeholder="Açıklama"
               value={form.description}
               onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="input"
             />
             <div className="grid grid-cols-3 gap-3">
               <select
                 value={form.type}
                 onChange={(e) => setForm((p) => ({ ...p, type: e.target.value as EquipmentType }))}
-                className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="select"
               >
                 {typeOptions.map((t) => (
                   <option key={t} value={t}>{typeLabel[t]}</option>
@@ -426,7 +426,7 @@ export default function EquipmentList() {
               <select
                 value={form.placementType}
                 onChange={(e) => setForm((p) => ({ ...p, placementType: e.target.value as EquipmentPlacementType }))}
-                className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="select"
               >
                 {placementOptions.map((p) => (
                   <option key={p} value={p}>{placementLabel[p]}</option>
@@ -438,13 +438,13 @@ export default function EquipmentList() {
                 max={10}
                 value={form.requiredUserLevel}
                 onChange={(e) => setForm((p) => ({ ...p, requiredUserLevel: Number(e.target.value) }))}
-                className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="input"
                 placeholder="Gerekli Seviye"
               />
             </div>
             <div className="flex gap-2">
-              <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm">Oluştur</button>
-              <button type="button" onClick={() => setShowCreate(false)} className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm">İptal</button>
+              <button type="submit" className="btn-primary">Oluştur</button>
+              <button type="button" onClick={() => setShowCreate(false)} className="btn-secondary">İptal</button>
             </div>
           </form>
         </div>
@@ -453,10 +453,10 @@ export default function EquipmentList() {
       {/* Equipment Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {data?.items.map((eq) => (
-          <div key={eq.id} className="bg-white rounded-lg shadow p-5 cursor-pointer hover:shadow-md transition-shadow" onClick={() => openDetail(eq.id)}>
+          <div key={eq.id} className="card cursor-pointer" onClick={() => openDetail(eq.id)}>
             <div className="flex justify-between items-start mb-3">
               <h3 className="font-semibold text-gray-900">{eq.name}</h3>
-              <span className={`text-xs px-2 py-1 rounded-full font-medium ${statusColor[eq.status]}`}>
+              <span className={statusBadge[eq.status]}>
                 {statusLabel[eq.status]}
               </span>
             </div>
@@ -470,7 +470,7 @@ export default function EquipmentList() {
               {eq.status === 'Available' && eq.placementType === 'Portable' && (
                 <button
                   onClick={() => setRentModal({ id: eq.id, action: 'rent' })}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs"
+                  className="btn-sm bg-blue-600 hover:bg-blue-700 text-white"
                 >
                   Kirala
                 </button>
@@ -479,7 +479,7 @@ export default function EquipmentList() {
                 (eq.placementType === 'Benchtop' || eq.placementType === 'FloorStationary') && (
                   <button
                     onClick={() => setRentModal({ id: eq.id, action: 'reserve' })}
-                    className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-xs"
+                    className="btn-sm bg-yellow-500 hover:bg-yellow-600 text-white"
                   >
                     Rezerve Et
                   </button>
@@ -489,7 +489,7 @@ export default function EquipmentList() {
               {eq.status !== 'Maintenance' && (
                 <button
                   onClick={() => openAheadModal(eq)}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded text-xs"
+                  className="btn-sm bg-blue-500 hover:bg-blue-600 text-white"
                 >
                   İleri Tarihe Al
                 </button>
@@ -498,7 +498,7 @@ export default function EquipmentList() {
                 eq.currentUserId === user?.id && (
                   <button
                     onClick={() => handleRelease(eq.id)}
-                    className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs"
+                    className="btn-sm bg-green-600 hover:bg-green-700 text-white"
                   >
                     İade Et
                   </button>
@@ -506,16 +506,16 @@ export default function EquipmentList() {
               {isAdmin && (
                 <>
                   {eq.status !== 'Maintenance' && (
-                    <button onClick={() => handleMaintenance(eq.id)} className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded text-xs">
+                    <button onClick={() => handleMaintenance(eq.id)} className="btn-sm bg-orange-500 hover:bg-orange-600 text-white">
                       Bakıma Al
                     </button>
                   )}
                   {eq.status === 'Maintenance' && (
-                    <button onClick={() => handleUnmaintenance(eq.id)} className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs">
+                    <button onClick={() => handleUnmaintenance(eq.id)} className="btn-sm bg-green-600 hover:bg-green-700 text-white">
                       Bakımdan Çıkar
                     </button>
                   )}
-                  <button onClick={() => handleDelete(eq.id)} className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs">
+                  <button onClick={() => handleDelete(eq.id)} className="btn-danger">
                     Sil
                   </button>
                 </>
@@ -531,11 +531,11 @@ export default function EquipmentList() {
       {/* Pagination */}
       {data && data.totalPages > 1 && (
         <div className="flex justify-center gap-2 mt-6">
-          <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="px-3 py-1 rounded border text-sm disabled:opacity-50">
+          <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="btn-secondary disabled:opacity-50">
             Önceki
           </button>
           <span className="px-3 py-1 text-sm text-gray-500">{page} / {data.totalPages}</span>
-          <button onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))} disabled={page === data.totalPages} className="px-3 py-1 rounded border text-sm disabled:opacity-50">
+          <button onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))} disabled={page === data.totalPages} className="btn-secondary disabled:opacity-50">
             Sonraki
           </button>
         </div>

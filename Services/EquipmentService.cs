@@ -461,18 +461,6 @@ public class EquipmentService : IEquipmentService
         }
     }
 
-    private IEquipmentState GetStateFor(EquipmentStatus status)
-    {
-        return status switch
-        {
-            EquipmentStatus.Reserved => new ReservedState(),
-            EquipmentStatus.Available => new AvailableState(),
-            EquipmentStatus.Rented => new RentedState(),
-            EquipmentStatus.Maintenance => new MaintenanceState(),
-            _ => throw new InvalidOperationException($"Unknown content status {status}")
-        };
-    }
-
     private User GetCurrentUser(Guid userId)
     {
         var result =  _unitOfWork.Users.Query().FirstOrDefault(u => u.Id == userId);

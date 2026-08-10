@@ -96,7 +96,7 @@ export default function Layout() {
               </Link>
               <button
                 onClick={handleLogout}
-                className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded text-sm"
+                className="btn-sm bg-red-600 hover:bg-red-700 text-white"
               >
                 Çıkış
               </button>

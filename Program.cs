@@ -108,7 +108,6 @@ public class Program
         
 
         //builder.Services.AddScoped<IEventService, EventService>();
-        builder.Services.AddScoped<TokenService>();
         builder.Services.AddScoped<IAuthService, AuthService>();
         builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
         builder.Services.AddScoped<IUserService, UserService>();
@@ -163,8 +162,7 @@ public class Program
             if (userId != null && Guid.TryParse(userId, out var guidId))
             {
                 // Database'den çek (Sync - .Result kullan)
-                var user = userRepository.GetByIdAsync(guidId).Result;
-
+                var user = userRepository.GetByIdAsync(guidId).GetAwaiter().GetResult();
                 return factory.Create(user?.Status ?? MembershipStatus.Unknown);
             }
 
@@ -203,13 +201,14 @@ public class Program
         app.MapControllers();
 
         // base admin oluşturma
+        /*
         await using (var scope = app.Services.CreateAsyncScope())
         {
             var UoW = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
             var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher<User>>();
             await SeedData.EnsureAdminAsync(UoW, hasher, app.Configuration);
         }
-
+        */
         await app.RunAsync();
     }
 }

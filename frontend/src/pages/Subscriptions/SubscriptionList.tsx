@@ -83,21 +83,21 @@ export default function SubscriptionList() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Aboneliklerim</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <h1 className="page-title">Aboneliklerim</h1>
+        <p className="page-subtitle mb-0">
           Takip ettiğin kategoride yeni duyuru yayınlandığında bildirim alırsın.
         </p>
       </div>
 
-      {error && <div className="bg-red-50 text-red-600 p-3 rounded mb-4 text-sm">{error}</div>}
+      {error && <div className="error-banner mb-4">{error}</div>}
 
-      <div className="bg-white rounded-lg shadow p-5 mb-6">
-        <h2 className="font-semibold text-gray-900 mb-4">Yeni Takip</h2>
+      <div className="card mb-6">
+        <h2 className="card-title">Yeni Takip</h2>
         <form onSubmit={handleCreate} className="grid gap-3 md:grid-cols-4">
           <select
             value={targetType}
             onChange={(e) => setTargetType(e.target.value as SubscriptionTargetType)}
-            className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="select"
           >
             <option value="Category">Kategori</option>
             <option value="Equipment">Ekipman</option>
@@ -106,7 +106,7 @@ export default function SubscriptionList() {
           <select
             value={targetId}
             onChange={(e) => setTargetId(e.target.value)}
-            className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="select"
           >
             <option value="">Seçiniz...</option>
             {targetOptions.map((o) => (
@@ -117,50 +117,50 @@ export default function SubscriptionList() {
           <select
             value={channel}
             onChange={(e) => setChannel(e.target.value as NotificationChannelType)}
-            className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="select"
           >
             <option value="InApp">Uygulama İçi</option>
             <option value="Email">E-posta</option>
           </select>
 
-          <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm">
+          <button type="submit" className="btn-primary">
             Takip Et
           </button>
         </form>
         {channel === 'Email' && (
-          <p className="text-xs text-yellow-700 bg-yellow-50 rounded px-3 py-2 mt-3">
+          <p className="info-banner mt-3">
             E-posta kanalı henüz hazır değil (SMTP adapter yazılmadı). Test için Uygulama İçi seç.
           </p>
         )}
       </div>
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b">
+      <div className="card p-0 overflow-hidden">
+        <table className="table">
+          <thead>
             <tr>
-              <th className="text-left px-5 py-3 text-gray-500 font-medium">Hedef</th>
-              <th className="text-left px-5 py-3 text-gray-500 font-medium">Tip</th>
-              <th className="text-left px-5 py-3 text-gray-500 font-medium">Kanal</th>
-              <th className="text-left px-5 py-3 text-gray-500 font-medium">Durum</th>
-              <th className="text-left px-5 py-3 text-gray-500 font-medium">İşlem</th>
+              <th>Hedef</th>
+              <th>Tip</th>
+              <th>Kanal</th>
+              <th>Durum</th>
+              <th>İşlem</th>
             </tr>
           </thead>
-          <tbody className="divide-y">
+          <tbody>
             {subscriptions.map((s) => (
-              <tr key={s.id} className="hover:bg-gray-50">
-                <td className="px-5 py-3 font-medium text-gray-900">
+              <tr key={s.id}>
+                <td className="font-medium text-gray-900">
                   {s.categoryName ?? s.equipmentName ?? '-'}
                 </td>
-                <td className="px-5 py-3 text-gray-500">
+                <td className="text-gray-500">
                   {s.targetType === 'Category' ? 'Kategori' : 'Ekipman'}
                 </td>
-                <td className="px-5 py-3 text-gray-500">{channelLabel[s.channel] ?? s.channel}</td>
-                <td className="px-5 py-3">
-                  <span className={`text-xs px-2 py-1 rounded-full font-medium ${s.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
+                <td className="text-gray-500">{channelLabel[s.channel] ?? s.channel}</td>
+                <td>
+                  <span className={`badge ${s.isActive ? 'badge-active' : 'badge-inactive'}`}>
                     {s.isActive ? 'Takipte' : 'Bırakıldı'}
                   </span>
                 </td>
-                <td className="px-5 py-3">
+                <td>
                   {s.isActive && (
                     <button onClick={() => handleDelete(s.id)} className="text-red-600 hover:underline text-xs">
                       Takibi Bırak

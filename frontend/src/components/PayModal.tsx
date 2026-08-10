@@ -54,7 +54,7 @@ export default function PayModal({ equipmentRentalId, onClose, onPaid }: PayModa
       {loading && <p className="text-sm text-gray-500 py-4">Tutar hesaplanıyor…</p>}
 
       {!loading && !preview && (
-        <p className="text-sm text-red-600 py-4">{error ?? 'Tutar bilgisi alınamadı.'}</p>
+        <p className="error-banner">{error ?? 'Tutar bilgisi alınamadı.'}</p>
       )}
 
       {preview && (
@@ -92,27 +92,27 @@ export default function PayModal({ equipmentRentalId, onClose, onPaid }: PayModa
           </div>
 
           {!preview.hasSufficientBalance && (
-            <p className="mt-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded p-3">
+            <p className="error-banner mt-3">
               Bakiyeniz yetersiz. Profil sayfanızdan bakiye yükleyip tekrar deneyin.
             </p>
           )}
 
           {error && (
-            <p className="mt-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded p-3">{error}</p>
+            <p className="error-banner mt-3">{error}</p>
           )}
 
           <div className="flex justify-end gap-2 mt-5">
             <button
               onClick={onClose}
               disabled={submitting}
-              className="px-4 py-2 rounded border text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              className="btn-secondary"
             >
               Vazgeç
             </button>
             <button
               onClick={handlePay}
               disabled={submitting || !preview.hasSufficientBalance}
-              className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium disabled:opacity-50"
+              className="btn-primary"
             >
               {submitting ? 'İşleniyor…' : `${formatMoney(preview.totalAmount)} Öde`}
             </button>

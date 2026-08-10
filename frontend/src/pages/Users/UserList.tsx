@@ -77,55 +77,55 @@ export default function UserList() {
           <DetailRow label="Rol" value={roleLabel[detailItem.type]} />
           <DetailRow label="Ekipman Seviyesi" value={detailItem.equipmentLevel} />
           <DetailRow label="Üyelik" value={membershipLabel[detailItem.status]} />
-          <DetailRow label="Durum" value={detailItem.isActive ? 'Aktif' : 'Pasif'} badge={detailItem.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} />
+          <DetailRow label="Durum" value={detailItem.isActive ? 'Aktif' : 'Pasif'} badge={detailItem.isActive ? 'badge-active' : 'badge-inactive'} />
           <DetailRow label="Kayıt Tarihi" value={new Date(detailItem.createdAt).toLocaleString('tr-TR')} />
         </DetailModal>
       )}
 
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Kullanıcılar</h1>
+        <h1 className="page-title mb-0">Kullanıcılar</h1>
         <button
           onClick={() => setShowInactive((v) => !v)}
-          className={`px-4 py-2 rounded-md text-sm border ${showInactive ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}
+          className="btn-secondary"
         >
           {showInactive ? 'Pasifleri Gizle' : 'Pasifleri Göster'}
         </button>
       </div>
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b">
+      <div className="card p-0 overflow-hidden">
+        <table className="table">
+          <thead>
             <tr>
-              <th className="text-left px-5 py-3 text-gray-500 font-medium">Ad Soyad</th>
-              <th className="text-left px-5 py-3 text-gray-500 font-medium hidden md:table-cell">E-posta</th>
-              <th className="text-left px-5 py-3 text-gray-500 font-medium hidden md:table-cell">Kullanıcı Adı</th>
-              <th className="text-left px-5 py-3 text-gray-500 font-medium">Rol</th>
-              <th className="text-left px-5 py-3 text-gray-500 font-medium hidden md:table-cell">Üyelik</th>
-              <th className="text-left px-5 py-3 text-gray-500 font-medium">Durum</th>
-              <th className="text-left px-5 py-3 text-gray-500 font-medium">İşlem</th>
+              <th>Ad Soyad</th>
+              <th className="hidden md:table-cell">E-posta</th>
+              <th className="hidden md:table-cell">Kullanıcı Adı</th>
+              <th>Rol</th>
+              <th className="hidden md:table-cell">Üyelik</th>
+              <th>Durum</th>
+              <th>İşlem</th>
             </tr>
           </thead>
-          <tbody className="divide-y">
+          <tbody>
             {users.filter((u) => showInactive || u.isActive).map((u) => (
-              <tr key={u.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => openDetail(u.id)}>
-                <td className="px-5 py-3 font-medium text-gray-900">{u.firstName} {u.lastName}</td>
-                <td className="px-5 py-3 text-gray-500 hidden md:table-cell">{u.email}</td>
-                <td className="px-5 py-3 text-gray-500 hidden md:table-cell">{u.username}</td>
-                <td className="px-5 py-3 text-gray-500">{roleLabel[u.type]}</td>
-                <td className="px-5 py-3 text-gray-500 hidden md:table-cell">{membershipLabel[u.status]}</td>
-                <td className="px-5 py-3">
-                  <span className={`text-xs px-2 py-1 rounded-full font-medium ${u.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+              <tr key={u.id} className="cursor-pointer" onClick={() => openDetail(u.id)}>
+                <td className="font-medium text-gray-900">{u.firstName} {u.lastName}</td>
+                <td className="hidden md:table-cell text-gray-500">{u.email}</td>
+                <td className="hidden md:table-cell text-gray-500">{u.username}</td>
+                <td className="text-gray-500">{roleLabel[u.type]}</td>
+                <td className="hidden md:table-cell text-gray-500">{membershipLabel[u.status]}</td>
+                <td>
+                  <span className={`badge ${u.isActive ? 'badge-active' : 'badge-inactive'}`}>
                     {u.isActive ? 'Aktif' : 'Pasif'}
                   </span>
                 </td>
-                <td className="px-5 py-3" onClick={(e) => e.stopPropagation()}>
+                <td onClick={(e) => e.stopPropagation()}>
                   <div className="flex gap-2">
                     {u.isActive ? (
                       <button onClick={() => handleDeactivate(u.id)} className="text-yellow-600 hover:underline text-xs">Pasifleştir</button>
                     ) : (
                       <button onClick={() => handleActivate(u.id)} className="text-green-600 hover:underline text-xs">Aktifleştir</button>
                     )}
-                    <button onClick={() => handleDelete(u.id)} className="text-red-600 hover:underline text-xs">Sil</button>
+                    <button onClick={() => handleDelete(u.id)} className="btn-danger">Sil</button>
                   </div>
                 </td>
               </tr>

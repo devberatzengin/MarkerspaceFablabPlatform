@@ -69,7 +69,7 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
 
         builder.HasIndex(p => new { p.Status, p.CreatedAt });
 
-        builder.HasIndex(p => p.EquipmentRentalId);
+        builder.HasIndex(p => p.EquipmentRentalId).IsUnique();
 
         builder.HasIndex(p => new { p.Status, p.PaidAt });
 

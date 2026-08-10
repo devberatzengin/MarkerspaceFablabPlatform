@@ -1,3 +1,4 @@
+using System.Transactions;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using MakerspaceFablabPlatform.Data.Interfaces;
@@ -17,12 +18,15 @@ public class PaymentService : IPaymentService
     private const decimal DailyRentalRate = 100m;
 
     private readonly ILogger<PaymentService> _logger;
+
+    private readonly IApplicationDbContext _applicationDbContext;
     private readonly IMapper _mapper;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMembershipStrategyFactory _membershipStrategyFactory;
 
-    public PaymentService(IMembershipStrategyFactory membershipStrategyFactory, ILogger<PaymentService> logger, IMapper mapper, IUnitOfWork unitOfWork)
+    public PaymentService(IApplicationDbContext applicationDbContext,IMembershipStrategyFactory membershipStrategyFactory, ILogger<PaymentService> logger, IMapper mapper, IUnitOfWork unitOfWork)
     {
+        _applicationDbContext = applicationDbContext;
         _membershipStrategyFactory = membershipStrategyFactory;
         _logger = logger;
         _mapper = mapper;
@@ -152,9 +156,12 @@ public class PaymentService : IPaymentService
         if (hasOpenPayment)
             throw new DuplicateEntityException("Bu kiralama için zaten ödeme alınmış.");
 
-        // Burda validation işlemerini bitiriyoruz 
-        
-        var preview = BuildPreview(equipmentRental, dbuser);
+        // Burda validation işlemerini bitiriyoruz
+        using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+        {
+            try
+            {
+                  var preview = BuildPreview(equipmentRental, dbuser);
 
         if (dbuser.Balance < preview.TotalAmount)
             throw new InsufficientBalanceException(preview.TotalAmount, dbuser.Balance);
@@ -203,7 +210,15 @@ public class PaymentService : IPaymentService
             payment.Id, equipmentRental.Id, targetUserId, preview.TotalAmount, dbuser.Balance);
 
         return _mapper.Map<Response>(payment);
-    }
+
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+          }
     
     public async Task<PagedResponse<Response>> GetAllAsync(ListRequest request, CancellationToken token = default)
     {
